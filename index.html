@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Muloqot - Video & Ovozli Qo'ng'iroq</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f8fafc;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(.95); opacity: .8; }
+            50% { transform: scale(1.1); opacity: .4; }
+            100% { transform: scale(.95); opacity: .8; }
+        }
+        .pulse-effect {
+            animation: pulse-ring 2s infinite ease-in-out;
+        }
+    </style>
+</head>
+
+<body class="h-screen w-screen overflow-hidden bg-slate-50 text-slate-800">
+
+<!-- ================= LOGIN ================= -->
+<div id="loginModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-3xl shadow-2xl p-6 sm:p-8 w-full max-w-md text-center">
+        <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+            <i class="fa-solid fa-video"></i>
+        </div>
+        <h2 class="text-2xl font-bold text-slate-800 mb-2">Tizimga kirish</h2>
+        <p class="text-sm text-slate-500 mb-6">Muloqot ilovasidan foydalanish uchun Gmail manzilingizni kiriting</p>
+
+        <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4 text-left">
+            <label class="block text-xs font-semibold text-slate-600 uppercase">Gmail / Email</label>
+            <div class="relative">
+                <i class="fa-regular fa-envelope absolute left-3.5 top-3.5 text-slate-400"></i>
+                <input type="email" id="userEmailInput" required placeholder="ismingiz@gmail.com"
+                    class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+            </div>
+            <button type="submit" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl">
+                <i class="fa-solid fa-arrow-right mr-2"></i> Ilovaga kirish
+            </button>
+        </form>
+        <p class="text-xs text-slate-400 mt-6">Wi-Fi yoki mobil internet orqali ishlaydi</p>
+    </div>
+</div>
+
+<!-- ================= MAIN APP ================= -->
+<div id="mainApp" class="hidden h-full flex flex-col">
+    <!-- HEADER -->
+    <header class="bg-white border-b border-slate-200 px-4 py-3 sm:px-8 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm">
+        <div class="flex items-center justify-between w-full md:w-auto">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center">
+                    <i class="fa-solid fa-video"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg">Muloqot</h1>
+                    <span class="text-xs text-emerald-600">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span> Onlayn
+                    </span>
+                </div>
+            </div>
+            <span id="currentUserEmailBadgeMobile" class="md:hidden text-xs text-slate-500"></span>
+        </div>
+
+        <!-- SEARCH -->
+        <div class="w-full md:max-w-xl">
+            <form onsubmit="handleSearchAndAdd(event)" class="flex items-center gap-2">
+                <div class="relative flex-1">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400"></i>
+                    <input type="email" id="searchEmailInput" required placeholder="Gmail manzilini kiriting..."
+                        class="w-full pl-10 pr-4 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <button type="submit" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm">
+                    <i class="fa-solid fa-user-plus"></i>
+                    <span class="hidden sm:inline ml-1">Qo'shish</span>
+                </button>
+            </form>
+        </div>
+
+        <!-- USER -->
+        <div class="hidden md:flex items-center gap-3">
+            <div class="text-right">
+                <p class="text-xs text-slate-400">MENING AKAUNTIM</p>
+                <p id="currentUserEmailBadge" class="text-sm font-semibold"></p>
+            </div>
+            <button onclick="logout()" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-red-50 hover:text-red-600">
+                <i class="fa-solid fa-right-from-bracket"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- CONTENT -->
+    <div class="flex-1 overflow-hidden flex flex-col md:flex-row p-4 sm:p-6 gap-6 max-w-7xl w-full mx-auto">
+        <!-- LEFT -->
+        <div class="w-full md:w-80 lg:w-96 flex flex-col gap-5 h-full overflow-y-auto">
+            <!-- PROFILE -->
+            <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm relative">
+                <div class="bg-gradient-to-r from-emerald-500 to-teal-600 h-16 absolute top-0 left-0 right-0 rounded-t-2xl"></div>
+                <div class="relative pt-6 flex flex-col items-center text-center">
+                    <div onclick="document.getElementById('profileImgInput').click()"
+                        class="w-24 h-24 rounded-full border-4 border-white bg-slate-100 shadow-md overflow-hidden cursor-pointer">
+                        <img id="userAvatarImg" src="https://placehold.co/150x150/10b981/ffffff?text=FOTO" class="w-full h-full object-cover">
+                    </div>
+                    <input type="file" id="profileImgInput" accept="image/*" class="hidden" onchange="handleProfilePhotoUpload(event)">
+                    <p class="text-xs font-semibold text-emerald-600 mt-3">
+                        <i class="fa-solid fa-circle-check"></i> Faol foydalanuvchi
+                    </p>
+                    <h3 id="profileEmailDisplay" class="font-bold mt-1"></h3>
+                </div>
+            </div>
+
+            <!-- CONTACTS -->
+            <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex-1 flex flex-col">
+                <div class="flex justify-between mb-4">
+                    <h2 class="font-bold flex items-center gap-2">
+                        <i class="fa-solid fa-address-book text-emerald-600"></i> Kontaktlar
+                    </h2>
+                    <span id="contactCountBadge" class="text-xs bg-emerald-100 text-emerald-700 font-bold px-2.5 py-1 rounded-full">0</span>
+                </div>
+
+                <div id="emptyContactsView" class="flex-1 flex flex-col items-center justify-center text-center text-slate-400 p-6">
+                    <i class="fa-solid fa-user-slash text-3xl mb-3"></i>
+                    <p class="text-sm font-medium">Ro'yxat bo'sh</p>
+                    <p class="text-xs mt-1">Yuqoridagi qidiruvdan Gmail kiriting</p>
+                </div>
+
+                <div id="contactsContainer" class="space-y-3 overflow-y-auto"></div>
+            </div>
+        </div>
+
+        <!-- RIGHT -->
+        <div class="flex-1 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <!-- IDLE -->
+            <div id="idleCallArea" class="h-full flex flex-col items-center justify-center text-center p-8">
+                <div class="w-24 h-24 rounded-3xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-6 text-4xl">
+                    <i class="fa-solid fa-phone-volume"></i>
+                </div>
+                <h2 class="text-2xl font-bold">Video va Ovozli Muloqot</h2>
+                <p class="text-slate-500 max-w-md text-sm mt-2">Kontaktlardan biriga qo'ng'iroq qiling.</p>
+            </div>
+
+            <!-- ACTIVE CALL -->
+            <div id="activeCallArea" class="hidden h-full bg-slate-900 relative flex flex-col">
+                <div class="relative flex-1">
+                    <video id="remoteVideo" autoplay playsinline class="w-full h-full object-cover"></video>
+
+                    <div id="remoteAvatarFallback" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-slate-900 text-white">
+                        <i class="fa-solid fa-user text-6xl text-emerald-400 mb-3"></i>
+                        <p id="remoteCallerName"></p>
+                        <p class="text-xs text-slate-400">Kamera o'chirilgan</p>
+                    </div>
+
+                    <!-- STATUS -->
+                    <div class="absolute top-4 left-4 bg-slate-900/80 text-white px-4 py-2 rounded-xl flex items-center gap-2">
+                        <span class="text-sm font-semibold" id="callPartnerEmail"></span>
+                        <span id="callTimer" class="text-xs text-slate-400 ml-3">00:00</span>
+                    </div>
+
+                    <!-- CAMERA BUTTON -->
+                    <button id="floatingCamToggleBtn" onclick="toggleCamera()"
+                        class="absolute top-6 right-6 w-14 h-14 rounded-full bg-emerald-500 text-white shadow-xl flex items-center justify-center">
+                        <i id="floatingCamIcon" class="fa-solid fa-camera text-xl"></i>
+                    </button>
+
+                    <!-- LOCAL VIDEO -->
+                    <div class="absolute bottom-6 left-6 w-36 h-48 bg-slate-800 rounded-2xl overflow-hidden border-2 border-white/20">
+                        <video id="localVideo" autoplay playsinline muted class="w-full h-full object-cover"></video>
+                        <div id="localAvatarFallback" class="hidden w-full h-full flex flex-col items-center justify-center text-slate-400">
+                            <i class="fa-solid fa-video-slash text-2xl"></i>
+                            <span class="text-xs mt-2">Kamera o'chiq</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CONTROLS -->
+                <div class="bg-slate-900 px-6 py-4 flex justify-center gap-6">
+                    <button id="micToggleBtn" onclick="toggleMic()" class="w-12 h-12 rounded-full bg-slate-800 text-white flex items-center justify-center">
+                        <i id="micIcon" class="fa-solid fa-microphone"></i>
+                    </button>
+
+                    <button onclick="endCall()" class="px-6 py-3 rounded-full bg-red-600 hover:bg-red-700 text-white font-semibold flex items-center gap-2">
+                        <i class="fa-solid fa-phone-slash"></i> Tugatish
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= OUTGOING MODAL ================= -->
+<div id="outgoingCallModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 p-4">
+    <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl">
+        <div class="w-24 h-24 mx-auto mb-6 rounded-full bg-emerald-100 flex items-center justify-center text-3xl text-emerald-600 pulse-effect">
+            <i class="fa-solid fa-user"></i>
+        </div>
+        <h3 id="outgoingTargetEmail" class="font-bold text-lg"></h3>
+        <p class="text-sm text-slate-500 my-2">Qo'ng'iroq qilinmoqda...</p>
+        <p class="text-xs text-amber-600 font-bold mb-6">Gudok ketmoqda: <span id="outgoingTimer">20</span>s</p>
+
+        <button onclick="cancelOutgoingCall()" class="w-full py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-semibold flex items-center justify-center gap-2">
+            <i class="fa-solid fa-phone-slash"></i> Bekor qilish
+        </button>
+    </div>
+</div>
+
+<!-- ================= INCOMING MODAL ================= -->
+<div id="incomingCallModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/85 p-4">
+    <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl">
+        <div class="w-24 h-24 mx-auto mb-6 rounded-full bg-emerald-100 flex items-center justify-center text-3xl text-emerald-600 pulse-effect">
+            <i class="fa-solid fa-phone"></i>
+        </div>
+        <h3 id="incomingCallerEmail" class="font-bold text-lg"></h3>
+        <p class="text-sm text-slate-500 my-1">Sizga video qo'ng'iroq qilmoqda</p>
+        <p class="text-xs text-amber-600 font-bold mb-6">Kutilmoqda: <span id="incomingTimer">20</span>s</p>
+
+        <div class="grid grid-cols-2 gap-3">
+            <button onclick="declineCall()" class="py-3 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl">Rad etish</button>
+            <button onclick="acceptCall()" class="py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl">Ko'tarish</button>
+        </div>
+    </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div id="toastContainer" class="fixed bottom-5 right-5 z-[100] flex flex-col gap-2"></div>
+
+<script>
+/* =========================================================
+   STATE & VARIABLES
+========================================================= */
+let currentUserEmail = '';
+let currentUserPhoto = 'https://placehold.co/150x150/10b981/ffffff?text=FOTO';
+let contacts = [];
+let activeCallPartner = null;
+
+let localStream = null;
+let peerConnection = null;
+let isCameraOn = true;
+let isMicOn = true;
+
+let callTimerInterval = null;
+let callSeconds = 0;
+
+let ringtoneInterval = null;
+let callTimeoutTimer = null;
+let countdownInterval = null;
+let secondsRemaining = 20;
+
+let audioCtx = null;
+
+// Multi-tab va WebRTC signallari uchun
+const signalingChannel = new BroadcastChannel('muloqot_signaling');
+
+const registeredUsers = [
+    "davron@gmail.com",
+    "ali@gmail.com",
+    "vali@gmail.com",
+    "test@gmail.com"
+];
+
+const rtcConfig = {
+    iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+};
+
+/* =========================================================
+   AUDIO SIGNAL (RINGTONE)
+========================================================= */
+function startRingtone(type = 'incoming') {
+    stopRingtone();
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    
+    ringtoneInterval = setInterval(() => {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        
+        if (type === 'outgoing') {
+            osc.frequency.setValueAtTime(425, audioCtx.currentTime); // Standard dial tone
+            gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 1.2);
+        } else {
+            osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // Incoming call ringtone
+            gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.6);
+        }
+    }, type === 'outgoing' ? 3000 : 1500);
+}
+
+function stopRingtone() {
+    if (ringtoneInterval) {
+        clearInterval(ringtoneInterval);
+        ringtoneInterval = null;
+    }
+}
+
+/* =========================================================
+   PAGE LOAD & LOGIN
+========================================================= */
+window.onload = function () {
+    const savedEmail = localStorage.getItem('muloqot_user_email');
+    const savedPhoto = localStorage.getItem('muloqot_user_photo');
+    const savedContacts = localStorage.getItem('muloqot_contacts');
+
+    if (savedPhoto) {
+        currentUserPhoto = savedPhoto;
+        document.getElementById('userAvatarImg').src = savedPhoto;
+    }
+    if (savedContacts) {
+        try { contacts = JSON.parse(savedContacts); } catch (e) { contacts = []; }
+    }
+    if (savedEmail) {
+        loginUser(savedEmail);
+    }
+};
+
+function handleLogin(event) {
+    event.preventDefault();
+    const email = document.getElementById('userEmailInput').value.trim().toLowerCase();
+    if (!email) return;
+    loginUser(email);
+}
+
+function loginUser(email) {
+    currentUserEmail = email;
+    localStorage.setItem('muloqot_user_email', email);
+
+    document.getElementById('currentUserEmailBadge').textContent = email;
+    document.getElementById('currentUserEmailBadgeMobile').textContent = email;
+    document.getElementById('profileEmailDisplay').textContent = email;
+
+    document.getElementById('loginModal').classList.add('hidden');
+    document.getElementById('mainApp').classList.remove('hidden');
+
+    renderContacts();
+    showToast("Xush kelibsiz!");
+}
+
+function logout() {
+    localStorage.removeItem('muloqot_user_email');
+    location.reload();
+}
+
+/* =========================================================
+   PROFILE PHOTO & CONTACTS
+========================================================= */
+function handleProfilePhotoUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        currentUserPhoto = e.target.result;
+        document.getElementById('userAvatarImg').src = currentUserPhoto;
+        localStorage.setItem('muloqot_user_photo', currentUserPhoto);
+        showToast("Profil rasmingiz yangilandi!");
+    };
+    reader.readAsDataURL(file);
+}
+
+function handleSearchAndAdd(event) {
+    event.preventDefault();
+    const input = document.getElementById('searchEmailInput');
+    const targetEmail = input.value.trim().toLowerCase();
+
+    if (!targetEmail) return;
+    if (targetEmail === currentUserEmail.toLowerCase()) {
+        showToast("O'zingizni kontaktga qo'sha olmaysiz!", "error");
+        input.value = '';
+        return;
+    }
+
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(targetEmail)) {
+        showToast("Gmail manzili noto'g'ri!", "error");
+        return;
+    }
+
+    const userExists = registeredUsers.some(e => e.toLowerCase() === targetEmail);
+    if (!userExists) {
+        showToast("Gmail topilmadi!", "error");
+        input.value = '';
+        return;
+    }
+
+    if (contacts.some(c => c.email.toLowerCase() === targetEmail)) {
+        showToast("Bu Gmail allaqachon kontaktlaringizda!", "warning");
+        input.value = '';
+        return;
+    }
+
+    const newContact = {
+        id: Date.now(),
+        email: targetEmail,
+        avatar: `https://placehold.co/100x100/10b981/ffffff?text=${targetEmail.charAt(0).toUpperCase()}`
+    };
+
+    contacts.push(newContact);
+    saveContacts();
+    renderContacts();
+    input.value = '';
+    showToast(`${targetEmail} kontaktga qo'shildi!`);
+}
+
+function saveContacts() {
+    localStorage.setItem('muloqot_contacts', JSON.stringify(contacts));
+}
+
+function removeContact(id) {
+    contacts = contacts.filter(c => c.id !== id);
+    saveContacts();
+    renderContacts();
+    showToast("Kontakt o'chirildi.");
+}
+
+function renderContacts() {
+    const container = document.getElementById('contactsContainer');
+    const empty = document.getElementById('emptyContactsView');
+    const badge = document.getElementById('contactCountBadge');
+
+    badge.textContent = contacts.length;
+    container.innerHTML = '';
+
+    if (contacts.length === 0) {
+        empty.classList.remove('hidden');
+        return;
+    }
+    empty.classList.add('hidden');
+
+    contacts.forEach(contact => {
+        const card = document.createElement('div');
+        card.className = "bg-slate-50 border border-slate-200 rounded-xl p-3.5 flex flex-col gap-3";
+        card.innerHTML = `
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-700 font-bold flex items-center justify-center uppercase">
+                    ${contact.email.charAt(0)}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-bold text-slate-800 truncate">${contact.email}</p>
+                    <p class="text-xs text-emerald-600">Ilovada mavjud</p>
+                </div>
+                <button onclick="removeContact(${contact.id})" class="text-slate-400 hover:text-red-500">
+                    <i class="fa-regular fa-trash-can"></i>
+                </button>
+            </div>
+            <button onclick="startCall('${contact.email}')" class="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium rounded-lg flex items-center justify-center gap-1">
+                <i class="fa-solid fa-phone"></i> Qo'ng'iroq qilish
+            </button>
+        `;
+        container.appendChild(card);
+    });
+}
+
+/* =========================================================
+   CALL & WEBRTC LOGIC
+========================================================= */
+function startCall(email) {
+    activeCallPartner = email;
+    document.getElementById('outgoingTargetEmail').textContent = email;
+    document.getElementById('outgoingCallModal').classList.remove('hidden');
+    
+    startRingtone('outgoing');
+    start20SecTimer('outgoing');
+
+    // Signal yuborish
+    signalingChannel.postMessage({
+        type: 'CALL_REQUEST',
+        from: currentUserEmail,
+        to: email
+    });
+}
+
+function cancelOutgoingCall() {
+    clearTimeout(callTimeoutTimer);
+    clearInterval(countdownInterval);
+    stopRingtone();
+    
+    document.getElementById('outgoingCallModal').classList.add('hidden');
+    
+    if (activeCallPartner) {
+        signalingChannel.postMessage({
+            type: 'CALL_CANCELLED',
+            from: currentUserEmail,
+            to: activeCallPartner
+        });
+    }
+    
+    activeCallPartner = null;
+    showToast("Qo'ng'iroq bekor qilindi.");
+}
+
+function acceptCall() {
+    clearTimeout(callTimeoutTimer);
+    clearInterval(countdownInterval);
+    stopRingtone();
+    document.getElementById('incomingCallModal').classList.add('hidden');
+
+    signalingChannel.postMessage({
+        type: 'CALL_ACCEPTED',
+        from: currentUserEmail,
+        to: activeCallPartner
+    });
+
+    initializeMediaAndConnectCall();
+}
+
+function declineCall() {
+    clearTimeout(callTimeoutTimer);
+    clearInterval(countdownInterval);
+    stopRingtone();
+    document.getElementById('incomingCallModal').classList.add('hidden');
+
+    signalingChannel.postMessage({
+        type: 'CALL_DECLINED',
+        from: currentUserEmail,
+        to: activeCallPartner
+    });
+
+    showToast("Qo'ng'iroq rad etildi.", "warning");
+    activeCallPartner = null;
+}
+
+function start20SecTimer(mode) {
+    secondsRemaining = 20;
+    const badgeId = mode === 'outgoing' ? 'outgoingTimer' : 'incomingTimer';
+    document.getElementById(badgeId).textContent = secondsRemaining;
+
+    clearInterval(countdownInterval);
+    countdownInterval = setInterval(() => {
+        secondsRemaining--;
+        document.getElementById(badgeId).textContent = secondsRemaining;
+        if (secondsRemaining <= 0) {
+            clearInterval(countdownInterval);
+        }
+    }, 1000);
+
+    clearTimeout(callTimeoutTimer);
+    callTimeoutTimer = setTimeout(() => {
+        stopRingtone();
+        clearInterval(countdownInterval);
+
+        if (mode === 'outgoing') {
+            document.getElementById('outgoingCallModal').classList.add('hidden');
+            showToast("Javob berilmadi (20 soniya o'tdi).", "warning");
+            signalingChannel.postMessage({ type: 'CALL_TIMEOUT', from: currentUserEmail, to: activeCallPartner });
+        } else {
+            document.getElementById('incomingCallModal').classList.add('hidden');
+            showToast("O'tkazib yuborilgan qo'ng'iroq.", "warning");
+        }
+        activeCallPartner = null;
+    }, 20000);
+}
+
+/* =========================================================
+   MEDIA & WEBRTC CONNECTIONS
+========================================================= */
+async function initializeMediaAndConnectCall() {
+    document.getElementById('idleCallArea').classList.add('hidden');
+    document.getElementById('activeCallArea').classList.remove('hidden');
+    document.getElementById('callPartnerEmail').textContent = activeCallPartner;
+
+    try {
+        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        document.getElementById('localVideo').srcObject = localStream;
+        
+        // PeerConnection yaratish va oqimni qo'shish
+        peerConnection = new RTCPeerConnection(rtcConfig);
+        localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+
+        peerConnection.ontrack = (event) => {
+            document.getElementById('remoteVideo').srcObject = event.streams[0];
+        };
+
+        peerConnection.onicecandidate = (event) => {
+            if (event.candidate) {
+                signalingChannel.postMessage({
+                    type: 'ICE_CANDIDATE',
+                    candidate: event.candidate,
+                    from: currentUserEmail,
+                    to: activeCallPartner
+                });
+            }
+        };
+
+        // Taklif (Offer) yaratish
+        const offer = await peerConnection.createOffer();
+        await peerConnection.setLocalDescription(offer);
+
+        signalingChannel.postMessage({
+            type: 'SDP_OFFER',
+            offer: offer,
+            from: currentUserEmail,
+            to: activeCallPartner
+        });
+
+        isCameraOn = true;
+        isMicOn = true;
+        startCallDurationTimer();
+
+    } catch (error) {
+        console.error(error);
+        showToast("Kamera/Mikrofon faol emas yoki ruxsat berilmadi.", "warning");
+    }
+}
+
+/* =========================================================
+   SIGNALING CHANNEL MESSAGES (Multi-tab va WebRTC)
+========================================================= */
+signalingChannel.onmessage = async (event) => {
+    const data = event.data;
+    if (data.to !== currentUserEmail) return;
+
+    if (data.type === 'CALL_REQUEST') {
+        activeCallPartner = data.from;
+        document.getElementById('incomingCallerEmail').textContent = data.from;
+        document.getElementById('incomingCallModal').classList.remove('hidden');
+        startRingtone('incoming');
+        start20SecTimer('incoming');
+    }
+
+    if (data.type === 'CALL_ACCEPTED') {
+        clearTimeout(callTimeoutTimer);
+        clearInterval(countdownInterval);
+        stopRingtone();
+        document.getElementById('outgoingCallModal').classList.add('hidden');
+        initializeMediaAndConnectCall();
+    }
+
+    if (data.type === 'CALL_DECLINED' || data.type === 'CALL_CANCELLED' || data.type === 'CALL_TIMEOUT') {
+        clearTimeout(callTimeoutTimer);
+        clearInterval(countdownInterval);
+        stopRingtone();
+        document.getElementById('outgoingCallModal').classList.add('hidden');
+        document.getElementById('incomingCallModal').classList.add('hidden');
+        showToast(data.type === 'CALL_DECLINED' ? "Qo'ng'iroq rad etildi." : "Qo'ng'iroq to'xtatildi.", "warning");
+        activeCallPartner = null;
+    }
+
+    if (data.type === 'SDP_OFFER' && peerConnection) {
+        await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
+        const answer = await peerConnection.createAnswer();
+        await peerConnection.setLocalDescription(answer);
+        signalingChannel.postMessage({
+            type: 'SDP_ANSWER',
+            answer: answer,
+            from: currentUserEmail,
+            to: activeCallPartner
+        });
+    }
+
+    if (data.type === 'SDP_ANSWER' && peerConnection) {
+        await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
+    }
+
+    if (data.type === 'ICE_CANDIDATE' && peerConnection) {
+        await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+    }
+
+    if (data.type === 'END_CALL') {
+        cleanUpAndCloseCall();
+        showToast("Suhbatdosh qo'ng'iroqni tugatdi.");
+    }
+};
+
+/* =========================================================
+   CAMERA & MIC TOGGLE & END CALL
+========================================================= */
+function toggleCamera() {
+    isCameraOn = !isCameraOn;
+    const button = document.getElementById('floatingCamToggleBtn');
+    const icon = document.getElementById('floatingCamIcon');
+    const video = document.getElementById('localVideo');
+    const fallback = document.getElementById('localAvatarFallback');
+
+    if (localStream && localStream.getVideoTracks().length) {
+        localStream.getVideoTracks()[0].enabled = isCameraOn;
+    }
+
+    if (isCameraOn) {
+        button.className = "absolute top-6 right-6 w-14 h-14 rounded-full bg-emerald-500 text-white shadow-xl flex items-center justify-center";
+        icon.className = "fa-solid fa-camera text-xl";
+        video.classList.remove('hidden');
+        fallback.classList.add('hidden');
+        showToast("Kamera yoqildi.");
+    } else {
+        button.className = "absolute top-6 right-6 w-14 h-14 rounded-full bg-slate-700 text-white shadow-xl flex items-center justify-center";
+        icon.className = "fa-solid fa-camera-slash text-xl";
+        video.classList.add('hidden');
+        fallback.classList.remove('hidden');
+        showToast("Kamera o'chirildi.", "warning");
+    }
+}
+
+function toggleMic() {
+    isMicOn = !isMicOn;
+    const button = document.getElementById('micToggleBtn');
+    const icon = document.getElementById('micIcon');
+
+    if (localStream && localStream.getAudioTracks().length) {
+        localStream.getAudioTracks()[0].enabled = isMicOn;
+    }
+
+    if (isMicOn) {
+        button.className = "w-12 h-12 rounded-full bg-slate-800 text-white flex items-center justify-center";
+        icon.className = "fa-solid fa-microphone";
+        showToast("Mikrofon yoqildi.");
+    } else {
+        button.className = "w-12 h-12 rounded-full bg-red-600 text-white flex items-center justify-center";
+        icon.className = "fa-solid fa-microphone-slash";
+        showToast("Mikrofon o'chirildi.", "warning");
+    }
+}
+
+function endCall() {
+    if (activeCallPartner) {
+        signalingChannel.postMessage({
+            type: 'END_CALL',
+            from: currentUserEmail,
+            to: activeCallPartner
+        });
+    }
+    cleanUpAndCloseCall();
+    showToast("Qo'ng'iroq yakunlandi.");
+}
+
+function cleanUpAndCloseCall() {
+    clearInterval(callTimerInterval);
+    if (peerConnection) {
+        peerConnection.close();
+        peerConnection = null;
+    }
+    if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+        localStream = null;
+    }
+    document.getElementById('activeCallArea').classList.add('hidden');
+    document.getElementById('idleCallArea').classList.remove('hidden');
+    activeCallPartner = null;
+}
+
+function startCallDurationTimer() {
+    callSeconds = 0;
+    clearInterval(callTimerInterval);
+    callTimerInterval = setInterval(() => {
+        callSeconds++;
+        const mins = String(Math.floor(callSeconds / 60)).padStart(2, '0');
+        const secs = String(callSeconds % 60).padStart(2, '0');
+        document.getElementById('callTimer').textContent = `${mins}:${secs}`;
+    }, 1000);
+}
+
+/* =========================================================
+   TOAST NOTIFICATION SYSTEM
+========================================================= */
+function showToast(message, type = 'success') {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    let bg = 'bg-emerald-600';
+    if (type === 'error') bg = 'bg-red-600';
+    if (type === 'warning') bg = 'bg-amber-500';
+
+    toast.className = `${bg} text-white px-4 py-3 rounded-xl shadow-lg text-sm flex items-center gap-2 transition-all duration-300 transform translate-y-2 opacity-0`;
+    toast.innerHTML = `<i class="fa-solid fa-circle-info"></i><span>${message}</span>`;
+
+    container.appendChild(toast);
+    setTimeout(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+    }, 10);
+
+    setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+</script>
+
+</body>
+</html>
