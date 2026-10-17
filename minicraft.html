@@ -1,0 +1,1678 @@
+Ha, endi **kodning o‘zini to‘g‘riladim**. Oldingi variantdagi asosiy muammo — o‘yinchining balandligi va yer collisioni noto‘g‘ri hisoblangan edi, shuning uchun yurish bloklanib qolishi mumkin edi.
+
+ Bu variantda `WASD` harakati alohida va sodda ishlaydi: **yerda yuradi, blokka urilsa to‘xtaydi, Space bilan sakraydi**. Blok buzish ovozi ham bor.
+
+```
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini Kraft</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #87ceeb;
+    font-family: Arial, sans-serif;
+}
+
+canvas {
+    display: block;
+}
+
+/* CROSSHAIR */
+#crosshair {
+    position: fixed;
+    z-index: 20;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 22px;
+    height: 22px;
+    pointer-events: none;
+}
+
+#crosshair::before,
+#crosshair::after {
+    content: "";
+    position: absolute;
+    background: white;
+    box-shadow: 0 0 3px black;
+}
+
+#crosshair::before {
+    width: 22px;
+    height: 2px;
+    left: 0;
+    top: 10px;
+}
+
+#crosshair::after {
+    width: 2px;
+    height: 22px;
+    left: 10px;
+    top: 0;
+}
+
+/* HUD */
+#hud {
+    position: fixed;
+    z-index: 30;
+    top: 15px;
+    left: 15px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    color: white;
+    background: rgba(0,0,0,.55);
+    user-select: none;
+}
+
+#hud b {
+    color: #65e646;
+}
+
+/* HOTBAR */
+#hotbar {
+    position: fixed;
+    z-index: 30;
+    left: 50%;
+    bottom: 20px;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 5px;
+    padding: 7px;
+    background: rgba(0,0,0,.7);
+    border: 2px solid #333;
+    border-radius: 8px;
+}
+
+.slot {
+    width: 55px;
+    height: 55px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 3px solid #777;
+    background: #444;
+    font-size: 28px;
+}
+
+.slot.active {
+    border-color: white;
+    background: #666;
+}
+
+/* START */
+#start {
+    position: fixed;
+    z-index: 100;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    text-align: center;
+    background: rgba(0,0,0,.84);
+}
+
+#start h1 {
+    margin-bottom: 20px;
+    color: #55d63f;
+    font-size: 64px;
+    text-shadow: 0 0 20px #228b22;
+}
+
+#start p {
+    margin: 5px;
+    font-size: 18px;
+}
+
+#start button {
+    margin-top: 25px;
+    padding: 15px 40px;
+    border: none;
+    border-radius: 10px;
+    background: #43a047;
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#start button:hover {
+    background: #2e7d32;
+}
+
+#pause {
+    position: fixed;
+    z-index: 50;
+    display: none;
+    left: 50%;
+    top: 15%;
+    transform: translateX(-50%);
+    padding: 10px 16px;
+    border-radius: 8px;
+    color: white;
+    background: rgba(0,0,0,.6);
+}
+</style>
+</head>
+
+<body>
+
+<div id="start">
+    <h1>⛏ MINI KRAFT</h1>
+
+    <p>W A S D — yurish</p>
+    <p>Mouse — qarash</p>
+    <p>Space — sakrash</p>
+    <p>Chap tugma — blokni buzish</p>
+    <p>O‘ng tugma — blok qo‘yish</p>
+    <p>1–5 — blok tanlash</p>
+
+    <button id="startButton">
+        O‘YINNI BOSHLASH
+    </button>
+</div>
+
+<div id="pause">
+    Sichqonchani bosing
+</div>
+
+<div id="hud">
+    ⛏ <b>MINI KRAFT</b><br>
+    Blok: <span id="selectedName">Grass</span>
+</div>
+
+<div id="crosshair"></div>
+
+<div id="hotbar">
+    <div class="slot active">🌿</div>
+    <div class="slot">🟫</div>
+    <div class="slot">🪨</div>
+    <div class="slot">🪵</div>
+    <div class="slot">🍃</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+
+<script>
+
+/* =========================================
+   ASOSIY
+========================================= */
+
+let scene;
+let camera;
+let renderer;
+
+let started = false;
+
+let yaw = 0;
+let pitch = 0;
+
+let velocityY = 0;
+
+let canJump = false;
+
+const blocks = [];
+
+const keys = {};
+
+const speed = 0.12;
+const gravity = -0.018;
+const jumpPower = 0.34;
+
+/*
+   O'yinchi o'lchami
+*/
+const PLAYER_WIDTH = 0.55;
+const PLAYER_HEIGHT = 1.8;
+
+/*
+   Ko'zning oyoqdan balandligi.
+*/
+const EYE_HEIGHT = 1.65;
+
+/*
+   Yer blokining yuqori qismi:
+   y = 0 blok -> top = 0.5
+
+   Shuning uchun oyoq:
+   y = 0.5
+   kamera:
+   y = 2.15
+*/
+
+const SPAWN_X = 0;
+const SPAWN_Y = 2.15;
+const SPAWN_Z = 5;
+
+/* =========================================
+   BLOK TURLARI
+========================================= */
+
+const blockNames = [
+    "Grass",
+    "Dirt",
+    "Stone",
+    "Wood",
+    "Leaves"
+];
+
+const blockColors = [
+    0x55aa38,
+    0x795548,
+    0x777777,
+    0x8b5a2b,
+    0x238b2d
+];
+
+let selectedBlock = 0;
+
+/* =========================================
+   AUDIO
+========================================= */
+
+let audioContext = null;
+
+function initAudio() {
+
+    if (!audioContext) {
+
+        audioContext =
+            new (
+                window.AudioContext ||
+                window.webkitAudioContext
+            )();
+    }
+
+    if (
+        audioContext.state === "suspended"
+    ) {
+        audioContext.resume();
+    }
+}
+
+function playBreakSound() {
+
+    initAudio();
+
+    const duration = 0.13;
+
+    const buffer =
+        audioContext.createBuffer(
+            1,
+            audioContext.sampleRate * duration,
+            audioContext.sampleRate
+        );
+
+    const data =
+        buffer.getChannelData(0);
+
+    for (
+        let i = 0;
+        i < data.length;
+        i++
+    ) {
+
+        data[i] =
+            (Math.random() * 2 - 1) *
+            (1 - i / data.length);
+    }
+
+    const source =
+        audioContext.createBufferSource();
+
+    source.buffer = buffer;
+
+    const filter =
+        audioContext.createBiquadFilter();
+
+    filter.type = "lowpass";
+    filter.frequency.value = 1800;
+
+    const gain =
+        audioContext.createGain();
+
+    gain.gain.setValueAtTime(
+        0.25,
+        audioContext.currentTime
+    );
+
+    gain.gain.exponentialRampToValueAtTime(
+        0.001,
+        audioContext.currentTime + duration
+    );
+
+    source.connect(filter);
+    filter.connect(gain);
+    gain.connect(
+        audioContext.destination
+    );
+
+    source.start();
+
+    source.stop(
+        audioContext.currentTime + duration
+    );
+}
+
+/* =========================================
+   INIT
+========================================= */
+
+function init() {
+
+    scene = new THREE.Scene();
+
+    scene.background =
+        new THREE.Color(0x87ceeb);
+
+    /* KAMERA */
+
+    camera =
+        new THREE.PerspectiveCamera(
+            75,
+            window.innerWidth /
+            window.innerHeight,
+            0.1,
+            1000
+        );
+
+    camera.position.set(
+        SPAWN_X,
+        SPAWN_Y,
+        SPAWN_Z
+    );
+
+    camera.rotation.order = "YXZ";
+
+    /* RENDERER */
+
+    renderer =
+        new THREE.WebGLRenderer({
+            antialias: true
+        });
+
+    renderer.setSize(
+        window.innerWidth,
+        window.innerHeight
+    );
+
+    renderer.setPixelRatio(
+        Math.min(
+            window.devicePixelRatio,
+            2
+        )
+    );
+
+    renderer.shadowMap.enabled = true;
+
+    document.body.appendChild(
+        renderer.domElement
+    );
+
+    /* YORUG'LIK */
+
+    const sun =
+        new THREE.DirectionalLight(
+            0xffffff,
+            1.5
+        );
+
+    sun.position.set(
+        20,
+        30,
+        10
+    );
+
+    sun.castShadow = true;
+
+    scene.add(sun);
+
+    const ambient =
+        new THREE.AmbientLight(
+            0xffffff,
+            0.55
+        );
+
+    scene.add(ambient);
+
+    createWorld();
+
+    setupControls();
+
+    window.addEventListener(
+        "resize",
+        resize
+    );
+
+    animate();
+}
+
+/* =========================================
+   BLOK QO'SHISH
+========================================= */
+
+function addBlock(
+    x,
+    y,
+    z,
+    type
+) {
+
+    const geometry =
+        new THREE.BoxGeometry(
+            1,
+            1,
+            1
+        );
+
+    const material =
+        new THREE.MeshLambertMaterial({
+            color:
+                blockColors[type]
+        });
+
+    const block =
+        new THREE.Mesh(
+            geometry,
+            material
+        );
+
+    block.position.set(
+        x,
+        y,
+        z
+    );
+
+    block.userData.type =
+        type;
+
+    block.castShadow = true;
+    block.receiveShadow = true;
+
+    scene.add(block);
+
+    blocks.push(block);
+
+    return block;
+}
+
+/* =========================================
+   BLOK BORLIGI
+========================================= */
+
+function hasBlock(
+    x,
+    y,
+    z
+) {
+
+    return blocks.some(
+        block =>
+            block.position.x === x &&
+            block.position.y === y &&
+            block.position.z === z
+    );
+}
+
+/* =========================================
+   WORLD
+========================================= */
+
+function createWorld() {
+
+    /*
+       Yer.
+    */
+
+    for (
+        let x = -20;
+        x <= 20;
+        x++
+    ) {
+
+        for (
+            let z = -20;
+            z <= 20;
+            z++
+        ) {
+
+            addBlock(
+                x,
+                0,
+                z,
+                0
+            );
+
+            addBlock(
+                x,
+                -1,
+                z,
+                1
+            );
+        }
+    }
+
+    /*
+       Toshlar.
+    */
+
+    for (
+        let i = 0;
+        i < 30;
+        i++
+    ) {
+
+        const x =
+            Math.floor(
+                Math.random() * 30 - 15
+            );
+
+        const z =
+            Math.floor(
+                Math.random() * 30 - 15
+            );
+
+        /*
+           Spawn atrofida tosh bo'lmasin.
+        */
+
+        if (
+            Math.abs(x) < 3 &&
+            Math.abs(z - 5) < 3
+        ) {
+            continue;
+        }
+
+        const height =
+            Math.floor(
+                Math.random() * 3
+            ) + 1;
+
+        for (
+            let y = 1;
+            y <= height;
+            y++
+        ) {
+
+            if (
+                !hasBlock(
+                    x,
+                    y,
+                    z
+                )
+            ) {
+
+                addBlock(
+                    x,
+                    y,
+                    z,
+                    2
+                );
+            }
+        }
+    }
+
+    /*
+       Daraxtlar.
+    */
+
+    for (
+        let i = 0;
+        i < 8;
+        i++
+    ) {
+
+        const x =
+            Math.floor(
+                Math.random() * 25 - 12
+            );
+
+        const z =
+            Math.floor(
+                Math.random() * 25 - 12
+            );
+
+        if (
+            Math.abs(x) < 3 &&
+            Math.abs(z - 5) < 3
+        ) {
+            continue;
+        }
+
+        createTree(
+            x,
+            z
+        );
+    }
+}
+
+/* =========================================
+   DARAXT
+========================================= */
+
+function createTree(
+    x,
+    z
+) {
+
+    for (
+        let y = 1;
+        y <= 4;
+        y++
+    ) {
+
+        if (
+            !hasBlock(
+                x,
+                y,
+                z
+            )
+        ) {
+
+            addBlock(
+                x,
+                y,
+                z,
+                3
+            );
+        }
+    }
+
+    for (
+        let dx = -2;
+        dx <= 2;
+        dx++
+    ) {
+
+        for (
+            let dz = -2;
+            dz <= 2;
+            dz++
+        ) {
+
+            if (
+                Math.abs(dx) +
+                Math.abs(dz) <= 3
+            ) {
+
+                if (
+                    !hasBlock(
+                        x + dx,
+                        5,
+                        z + dz
+                    )
+                ) {
+
+                    addBlock(
+                        x + dx,
+                        5,
+                        z + dz,
+                        4
+                    );
+                }
+            }
+        }
+    }
+
+    if (
+        !hasBlock(
+            x,
+            6,
+            z
+        )
+    ) {
+
+        addBlock(
+            x,
+            6,
+            z,
+            4
+        );
+    }
+}
+
+/* =========================================
+   O'YINCHI BOXI
+========================================= */
+
+function getPlayerBox(
+    x,
+    feetY,
+    z
+) {
+
+    return {
+        minX:
+            x - PLAYER_WIDTH / 2,
+
+        maxX:
+            x + PLAYER_WIDTH / 2,
+
+        minY:
+            feetY,
+
+        maxY:
+            feetY + PLAYER_HEIGHT,
+
+        minZ:
+            z - PLAYER_WIDTH / 2,
+
+        maxZ:
+            z + PLAYER_WIDTH / 2
+    };
+}
+
+/* =========================================
+   BLOCK BOX
+========================================= */
+
+function getBlockBox(block) {
+
+    const x =
+        block.position.x;
+
+    const y =
+        block.position.y;
+
+    const z =
+        block.position.z;
+
+    return {
+        minX: x - 0.5,
+        maxX: x + 0.5,
+
+        minY: y - 0.5,
+        maxY: y + 0.5,
+
+        minZ: z - 0.5,
+        maxZ: z + 0.5
+    };
+}
+
+/* =========================================
+   BOX COLLISION
+========================================= */
+
+function overlap(
+    a,
+    b
+) {
+
+    return (
+        a.maxX > b.minX &&
+        a.minX < b.maxX &&
+
+        a.maxY > b.minY &&
+        a.minY < b.maxY &&
+
+        a.maxZ > b.minZ &&
+        a.minZ < b.maxZ
+    );
+}
+
+/* =========================================
+   COLLISION
+========================================= */
+
+function collidesAt(
+    x,
+    feetY,
+    z
+) {
+
+    const player =
+        getPlayerBox(
+            x,
+            feetY,
+            z
+        );
+
+    for (
+        const block of blocks
+    ) {
+
+        const box =
+            getBlockBox(block);
+
+        if (
+            overlap(
+                player,
+                box
+            )
+        ) {
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/* =========================================
+   YERNI TOPISH
+========================================= */
+
+function findGround(
+    x,
+    z,
+    feetY
+) {
+
+    let highest =
+        -Infinity;
+
+    const half =
+        PLAYER_WIDTH / 2;
+
+    for (
+        const block of blocks
+    ) {
+
+        const bx =
+            block.position.x;
+
+        const by =
+            block.position.y;
+
+        const bz =
+            block.position.z;
+
+        /*
+           O'yinchi blok ustida turibdimi?
+        */
+
+        if (
+            x + half <= bx - 0.5 ||
+            x - half >= bx + 0.5 ||
+            z + half <= bz - 0.5 ||
+            z - half >= bz + 0.5
+        ) {
+            continue;
+        }
+
+        const top =
+            by + 0.5;
+
+        /*
+           Faqat o'yinchidan pastdagi
+           blokni yer deb olamiz.
+        */
+
+        if (
+            top <= feetY + 0.15 &&
+            top > highest
+        ) {
+
+            highest = top;
+        }
+    }
+
+    return highest;
+}
+
+/* =========================================
+   KAMERA / MOUSE
+========================================= */
+
+function setupControls() {
+
+    /*
+       Klaviatura.
+    */
+
+    document.addEventListener(
+        "keydown",
+        function(e) {
+
+            keys[e.code] = true;
+
+            /*
+               Space.
+            */
+
+            if (
+                e.code === "Space" &&
+                started &&
+                canJump
+            ) {
+
+                velocityY =
+                    jumpPower;
+
+                canJump = false;
+
+                e.preventDefault();
+            }
+
+            /*
+               1-5.
+            */
+
+            if (
+                e.key >= "1" &&
+                e.key <= "5"
+            ) {
+
+                selectedBlock =
+                    Number(e.key) - 1;
+
+                updateHotbar();
+            }
+        }
+    );
+
+    document.addEventListener(
+        "keyup",
+        function(e) {
+
+            keys[e.code] = false;
+        }
+    );
+
+    /*
+       Mouse bilan qarash.
+    */
+
+    document.addEventListener(
+        "mousemove",
+        function(e) {
+
+            if (
+                !started
+            ) {
+                return;
+            }
+
+            if (
+                document.pointerLockElement !==
+                renderer.domElement
+            ) {
+                return;
+            }
+
+            yaw -=
+                e.movementX * 0.002;
+
+            pitch -=
+                e.movementY * 0.002;
+
+            pitch =
+                Math.max(
+                    -1.45,
+                    Math.min(
+                        1.45,
+                        pitch
+                    )
+                );
+
+            camera.rotation.y =
+                yaw;
+
+            camera.rotation.x =
+                pitch;
+        }
+    );
+
+    /*
+       Chap/o'ng tugma.
+    */
+
+    renderer.domElement.addEventListener(
+        "mousedown",
+        function(e) {
+
+            if (!started) {
+                return;
+            }
+
+            if (
+                document.pointerLockElement !==
+                renderer.domElement
+            ) {
+
+                renderer.domElement.requestPointerLock();
+
+                return;
+            }
+
+            if (e.button === 0) {
+
+                breakBlock();
+            }
+
+            if (e.button === 2) {
+
+                placeBlock();
+            }
+        }
+    );
+
+    renderer.domElement.addEventListener(
+        "contextmenu",
+        function(e) {
+
+            e.preventDefault();
+        }
+    );
+
+    /*
+       Mouse lock chiqib ketganda.
+    */
+
+    document.addEventListener(
+        "pointerlockchange",
+        function() {
+
+            const pause =
+                document.getElementById(
+                    "pause"
+                );
+
+            if (
+                started &&
+                document.pointerLockElement !==
+                renderer.domElement
+            ) {
+
+                pause.style.display =
+                    "block";
+
+            } else {
+
+                pause.style.display =
+                    "none";
+            }
+        }
+    );
+}
+
+/* =========================================
+   ENG MUHIM QISM:
+   YURISH
+========================================= */
+
+function movePlayer() {
+
+    let forward = 0;
+    let right = 0;
+
+    /*
+       W = oldinga
+       S = orqaga
+       A = chap
+       D = o'ng
+    */
+
+    if (keys["KeyW"]) {
+        forward += 1;
+    }
+
+    if (keys["KeyS"]) {
+        forward -= 1;
+    }
+
+    if (keys["KeyA"]) {
+        right -= 1;
+    }
+
+    if (keys["KeyD"]) {
+        right += 1;
+    }
+
+    /*
+       Harakat bor bo'lsa.
+    */
+
+    if (
+        forward !== 0 ||
+        right !== 0
+    ) {
+
+        /*
+           Diagonal yurishda tezlik
+           oshib ketmasin.
+        */
+
+        const length =
+            Math.sqrt(
+                forward * forward +
+                right * right
+            );
+
+        forward /= length;
+        right /= length;
+
+        /*
+           Kameraning yo'nalishi.
+        */
+
+        const sin =
+            Math.sin(yaw);
+
+        const cos =
+            Math.cos(yaw);
+
+        /*
+           X va Z harakati.
+        */
+
+        const dx =
+            (
+                right * cos +
+                forward * sin
+            ) * speed;
+
+        const dz =
+            (
+                -right * sin +
+                forward * cos
+            ) * speed;
+
+        /*
+           Hozirgi oyoq balandligi.
+        */
+
+        const feetY =
+            camera.position.y -
+            EYE_HEIGHT;
+
+        /*
+           X bo'yicha collision.
+        */
+
+        const nextX =
+            camera.position.x +
+            dx;
+
+        if (
+            !collidesAt(
+                nextX,
+                feetY,
+                camera.position.z
+            )
+        ) {
+
+            camera.position.x =
+                nextX;
+        }
+
+        /*
+           Z bo'yicha collision.
+        */
+
+        const nextZ =
+            camera.position.z +
+            dz;
+
+        if (
+            !collidesAt(
+                camera.position.x,
+                feetY,
+                nextZ
+            )
+        ) {
+
+            camera.position.z =
+                nextZ;
+        }
+    }
+
+    /* =================================
+       GRAVITATSIYA
+    ================================= */
+
+    let feetY =
+        camera.position.y -
+        EYE_HEIGHT;
+
+    velocityY += gravity;
+
+    const nextFeetY =
+        feetY +
+        velocityY;
+
+    /*
+       Pastga tushish.
+    */
+
+    if (
+        velocityY <= 0
+    ) {
+
+        const ground =
+            findGround(
+                camera.position.x,
+                camera.position.z,
+                feetY
+            );
+
+        if (
+            ground !== -Infinity &&
+            nextFeetY <= ground &&
+            feetY >= ground - 0.3
+        ) {
+
+            feetY =
+                ground;
+
+            velocityY = 0;
+
+            canJump = true;
+
+        } else {
+
+            feetY =
+                nextFeetY;
+
+            canJump = false;
+        }
+    }
+
+    /*
+       Yuqoriga sakrash.
+    */
+
+    else {
+
+        const nextBox =
+            getPlayerBox(
+                camera.position.x,
+                nextFeetY,
+                camera.position.z
+            );
+
+        let hitCeiling =
+            false;
+
+        for (
+            const block of blocks
+        ) {
+
+            if (
+                overlap(
+                    nextBox,
+                    getBlockBox(block)
+                )
+            ) {
+
+                hitCeiling = true;
+
+                break;
+            }
+        }
+
+        if (
+            hitCeiling
+        ) {
+
+            velocityY = 0;
+
+        } else {
+
+            feetY =
+                nextFeetY;
+        }
+    }
+
+    /*
+       Kamerani oyoqqa nisbatan joylash.
+    */
+
+    camera.position.y =
+        feetY +
+        EYE_HEIGHT;
+
+    /*
+       Dunyo chegarasi.
+    */
+
+    camera.position.x =
+        THREE.MathUtils.clamp(
+            camera.position.x,
+            -19.4,
+            19.4
+        );
+
+    camera.position.z =
+        THREE.MathUtils.clamp(
+            camera.position.z,
+            -19.4,
+            19.4
+        );
+
+    /*
+       Juda pastga tushib ketsa.
+    */
+
+    if (
+        camera.position.y < -10
+    ) {
+
+        camera.position.set(
+            SPAWN_X,
+            SPAWN_Y,
+            SPAWN_Z
+        );
+
+        velocityY = 0;
+
+        canJump = true;
+    }
+}
+
+/* =========================================
+   BLOKNI NISHONGA OLISH
+========================================= */
+
+function getTargetBlock() {
+
+    const raycaster =
+        new THREE.Raycaster();
+
+    raycaster.setFromCamera(
+        new THREE.Vector2(0, 0),
+        camera
+    );
+
+    const hits =
+        raycaster.intersectObjects(
+            blocks,
+            false
+        );
+
+    if (
+        hits.length > 0 &&
+        hits[0].distance <= 6
+    ) {
+
+        return hits[0];
+    }
+
+    return null;
+}
+
+/* =========================================
+   BLOK BUZISH
+========================================= */
+
+function breakBlock() {
+
+    const hit =
+        getTargetBlock();
+
+    if (!hit) {
+        return;
+    }
+
+    const block =
+        hit.object;
+
+    /*
+       Pastki qatlam buzilmaydi.
+    */
+
+    if (
+        block.position.y < 0
+    ) {
+        return;
+    }
+
+    /*
+       OVOZ.
+    */
+
+    playBreakSound();
+
+    /*
+       O'chirish.
+    */
+
+    scene.remove(block);
+
+    block.geometry.dispose();
+
+    block.material.dispose();
+
+    const index =
+        blocks.indexOf(block);
+
+    if (
+        index !== -1
+    ) {
+
+        blocks.splice(
+            index,
+            1
+        );
+    }
+}
+
+/* =========================================
+   BLOK QO'YISH
+========================================= */
+
+function placeBlock() {
+
+    const hit =
+        getTargetBlock();
+
+    if (!hit) {
+        return;
+    }
+
+    const normal =
+        hit.face.normal.clone();
+
+    normal.transformDirection(
+        hit.object.matrixWorld
+    );
+
+    const position =
+        hit.object.position
+            .clone()
+            .add(normal);
+
+    const x =
+        Math.round(position.x);
+
+    const y =
+        Math.round(position.y);
+
+    const z =
+        Math.round(position.z);
+
+    /*
+       Bu joyda blok bor.
+    */
+
+    if (
+        hasBlock(
+            x,
+            y,
+            z
+        )
+    ) {
+        return;
+    }
+
+    /*
+       O'yinchi ichiga blok
+       qo'yilmasin.
+    */
+
+    const feetY =
+        camera.position.y -
+        EYE_HEIGHT;
+
+    if (
+        collidesAt(
+            x,
+            feetY,
+            z
+        )
+    ) {
+        return;
+    }
+
+    addBlock(
+        x,
+        y,
+        z,
+        selectedBlock
+    );
+}
+
+/* =========================================
+   HOTBAR
+========================================= */
+
+function updateHotbar() {
+
+    const slots =
+        document.querySelectorAll(
+            ".slot"
+        );
+
+    slots.forEach(
+        function(slot) {
+
+            slot.classList.remove(
+                "active"
+            );
+        }
+    );
+
+    slots[selectedBlock]
+        .classList.add(
+            "active"
+        );
+
+    document.getElementById(
+        "selectedName"
+    ).textContent =
+        blockNames[selectedBlock];
+}
+
+/* =========================================
+   O'YINNI BOSHLASH
+========================================= */
+
+function startGame() {
+
+    started = true;
+
+    initAudio();
+
+    document.getElementById(
+        "start"
+    ).style.display =
+        "none";
+
+    /*
+       Spawn joyi.
+    */
+
+    camera.position.set(
+        SPAWN_X,
+        SPAWN_Y,
+        SPAWN_Z
+    );
+
+    velocityY = 0;
+
+    canJump = true;
+
+    /*
+       Mouse lock.
+    */
+
+    try {
+
+        renderer.domElement.requestPointerLock();
+
+    } catch (error) {
+
+        console.log(
+            "Mouse lock ishlamadi",
+            error
+        );
+    }
+}
+
+/* =========================================
+   RESIZE
+========================================= */
+
+function resize() {
+
+    camera.aspect =
+        window.innerWidth /
+        window.innerHeight;
+
+    camera.updateProjectionMatrix();
+
+    renderer.setSize(
+        window.innerWidth,
+        window.innerHeight
+    );
+}
+
+/* =========================================
+   GAME LOOP
+========================================= */
+
+function animate() {
+
+    requestAnimationFrame(
+        animate
+    );
+
+    if (started) {
+
+        movePlayer();
+    }
+
+    renderer.render(
+        scene,
+        camera
+    );
+}
+
+/* =========================================
+   START BUTTON
+========================================= */
+
+document.getElementById(
+    "startButton"
+).addEventListener(
+    "click",
+    startGame
+);
+
+/* =========================================
+   ISHGA TUSHIRISH
+========================================= */
+
+init();
+
+</script>
+
+</body>
+</html>
+```
+
+ **Bu safar asosiy yurish qismi tuzatildi:** `KeyW`, `KeyA`, `KeyS`, `KeyD` to‘g‘ridan-to‘g‘ri tekshiriladi va yerning `y=0` bloklari bilan collision hisobida o‘yinchini yerga noto‘g‘ri tiqib qo‘ymaydi.

@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Roblox 3D Global Studio Pro</title>
+  
+  <!-- Three.js (3D Dvigatel) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- PeerJS (Global Onlayn Multiplayer WebRTC) -->
+  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      user-select: none;
+    }
+
+    body {
+      background: #090d16;
+      color: #f8fafc;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    .screen {
+      display: none;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    /* Tugmalar */
+    .btn {
+      padding: 0.7rem 1.2rem;
+      border: 0;
+      border-radius: 10px;
+      background: #2563eb;
+      color: #ffffff;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .btn:hover { background: #1d4ed8; transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+    .btn-red { background: #ef4444; }
+    .btn-red:hover { background: #dc2626; }
+    .btn-green { background: #10b981; }
+    .btn-green:hover { background: #059669; }
+    .btn-sub { background: #334155; color: #cbd5e1; }
+    .btn-sub:hover { background: #475569; color: #fff; }
+
+    /* 1. Auth & Skin Creator Screen */
+    #auth {
+      justify-content: center;
+      align-items: center;
+      background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+      padding: 1rem;
+      overflow-y: auto;
+    }
+
+    .auth-container {
+      display: flex;
+      gap: 2rem;
+      background: #1e293b;
+      padding: 2rem;
+      border-radius: 20px;
+      border: 1px solid #334155;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+      max-width: 850px;
+      width: 100%;
+      flex-wrap: wrap;
+    }
+
+    .auth-form { flex: 1; min-width: 280px; }
+    .skin-preview-box {
+      flex: 1;
+      min-width: 280px;
+      height: 320px;
+      background: #090d16;
+      border-radius: 14px;
+      border: 1px solid #334155;
+      position: relative;
+    }
+
+    .card-title { color: #38bdf8; font-size: 1.6rem; margin-bottom: 0.4rem; }
+    .card-sub { font-size: 0.85rem; color: #94a3b8; margin-bottom: 1.5rem; }
+
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-size: 0.85rem; color: #cbd5e1; margin-bottom: 0.3rem; }
+    .form-control {
+      width: 100%;
+      padding: 0.7rem 0.9rem;
+      background: #0f172a;
+      border: 1px solid #334155;
+      color: #f8fafc;
+      border-radius: 8px;
+      outline: none;
+    }
+
+    /* 2. Dashboard */
+    #dash {
+      flex-direction: column;
+      padding: 1.5rem;
+      overflow-y: auto;
+      background: #0f172a;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #1e293b;
+      padding: 1rem 1.5rem;
+      border-radius: 14px;
+      border: 1px solid #334155;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .tabs { display: flex; gap: 1rem; margin: 1.5rem 0 1rem; border-bottom: 1px solid #334155; padding-bottom: 0.5rem; }
+    .tab { background: none; border: 0; color: #94a3b8; font-weight: 600; cursor: pointer; padding: 0.5rem 1rem; border-radius: 6px; }
+    .tab.active-tab { color: #38bdf8; background: rgba(56, 189, 248, 0.1); }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.2rem; }
+    .g-card {
+      background: #1e293b;
+      padding: 1.2rem;
+      border-radius: 14px;
+      border: 1px solid #334155;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 180px;
+    }
+
+    /* 3. Studio Layout */
+    #studio { display: flex; width: 100vw; height: 100vh; flex-direction: row; }
+    #editor-view { flex: 1; height: 100%; background: #020617; position: relative; }
+    
+    .sidebar {
+      width: 380px;
+      background: #1e293b;
+      padding: 1.2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.9rem;
+      border-left: 1px solid #334155;
+      overflow-y: auto;
+    }
+
+    textarea {
+      width: 100%;
+      height: 220px;
+      background: #090d16;
+      color: #38bdf8;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 0.8rem;
+      font-family: monospace;
+      font-size: 0.85rem;
+      resize: vertical;
+      outline: none;
+    }
+
+    .console {
+      background: #090d16;
+      color: #4ade80;
+      padding: 0.75rem;
+      min-height: 70px;
+      font-family: monospace;
+      font-size: 0.8rem;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      white-space: pre-wrap;
+    }
+
+    /* 4. Play Screen & Mobile Controls */
+    #play { position: relative; width: 100vw; height: 100vh; }
+    #play-view { width: 100%; height: 100%; background: #000; }
+    
+    .play-ui {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      background: rgba(30, 41, 59, 0.85);
+      backdrop-filter: blur(8px);
+      padding: 0.8rem 1.2rem;
+      border-radius: 12px;
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      z-index: 10;
+    }
+
+    /* Touch Controls for Mobile Phones */
+    .mobile-controls {
+      display: none;
+      position: absolute;
+      bottom: 2rem;
+      left: 0;
+      width: 100%;
+      padding: 0 2rem;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 20;
+      pointer-events: none;
+    }
+
+    @media (max-width: 900px) {
+      #studio { flex-direction: column; }
+      .sidebar { width: 100%; height: 45vh; }
+      #editor-view { height: 55vh; }
+      .mobile-controls { display: flex; }
+    }
+
+    .dpad {
+      width: 120px;
+      height: 120px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 50%;
+      position: relative;
+      touch-action: none;
+      pointer-events: auto;
+      backdrop-filter: blur(5px);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .dpad-stick {
+      width: 50px;
+      height: 50px;
+      background: #38bdf8;
+      border-radius: 50%;
+      position: absolute;
+      top: 35px;
+      left: 35px;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+    }
+
+    .jump-btn {
+      width: 70px;
+      height: 70px;
+      background: #10b981;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 1.1rem;
+      pointer-events: auto;
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .online-badge {
+      background: #10b981;
+      color: white;
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1. Auth & Skin Customizer Screen -->
+  <div id="auth" class="screen active">
+    <div class="auth-container">
+      <div class="auth-form">
+        <h2 class="card-title">Roblox 3D Web Studio</h2>
+        <p class="card-sub">O'z avataringizni yarating va dunyo bo'ylab o'ynang!</p>
+        
+        <div class="form-group">
+          <label>Nikneym:</label>
+          <input type="text" id="username" class="form-control" placeholder="Masalan: ProGamer2026">
+        </div>
+
+        <div class="form-group">
+          <label>Skin Rangi (Tana):</label>
+          <input type="color" id="skinColor" class="form-control" value="#ffdbac" onchange="updateSkinPreview()">
+        </div>
+
+        <div class="form-group">
+          <label>Kiyim Rangi (Futbolka):</label>
+          <input type="color" id="shirtColor" class="form-control" value="#2563eb" onchange="updateSkinPreview()">
+        </div>
+
+        <div class="form-group">
+          <label>Bosh Aksessuari:</label>
+          <select id="hatType" class="form-control" onchange="updateSkinPreview()">
+            <option value="none">Yo'q</option>
+            <option value="crown">👑 Toj</option>
+            <option value="cap">🧢 Kepka</option>
+            <option value="headphones">🎧 Quloqchin</option>
+          </select>
+        </div>
+
+        <button class="btn btn-green" style="width:100%; margin-top:1rem;" onclick="login()">🚀 Kirish va Saqlash</button>
+      </div>
+
+      <div class="skin-preview-box" id="skin-preview-container">
+        <div style="position:absolute; top:10px; left:10px; color:#38bdf8; font-weight:bold; font-size:0.8rem; z-index:2;">
+          🧍 3D Personaj Avatari
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Dashboard Screen -->
+  <div id="dash" class="screen">
+    <header>
+      <div>
+        <h2 style="color: #38bdf8;">Roblox Studio Web</h2>
+        <span id="user-info" style="color:#cbd5e1; font-size:0.9rem;"></span>
+      </div>
+      
+      <div style="display: flex; align-items: center; gap: 0.8rem; flex-wrap:wrap;">
+        <input type="text" id="join-room-id" class="form-control" style="width:160px;" placeholder="Xona kodi...">
+        <button class="btn btn-sub" onclick="joinOnlineRoom()">🌐 Ulanish</button>
+        <button class="btn btn-green" onclick="openStudio()">+ Yangi O'yin</button>
+        <button class="btn btn-red" onclick="logout()">Chiqish</button>
+      </div>
+    </header>
+
+    <div class="tabs">
+      <button class="tab active-tab" onclick="switchTab('all', this)">🌐 Onlayn O'yinlar</button>
+      <button class="tab" onclick="switchTab('mine', this)">📁 Mening O'yinlarim</button>
+    </div>
+
+    <div id="games-list" class="grid"></div>
+  </div>
+
+  <!-- 3. Studio Screen -->
+  <div id="studio" class="screen">
+    <div id="editor-view"></div>
+    
+    <div class="sidebar">
+      <h3>🛠️ 3D Studio & Full Code Editor</h3>
+      
+      <div class="form-group">
+        <label>O'yin Nomi:</label>
+        <input type="text" id="g-title" value="Mening Parkour O'yinim" class="form-control">
+      </div>
+
+      <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
+        <button class="btn btn-sub" style="flex:1" onclick="builderAddBlock()">+ Blok</button>
+        <button class="btn btn-sub" style="flex:1" onclick="builderAddCoin()">+ Tanga</button>
+        <button class="btn btn-sub" style="flex:1" onclick="builderAddLight()">+ Chiroq</button>
+      </div>
+
+      <div class="form-group">
+        <label>Tayyor O'yin Kodi Shablonlari:</label>
+        <select class="form-control" onchange="loadPresetScript(this.value)">
+          <option value="obby">🏃 Roblox Parkour Obby Arena</option>
+          <option value="coin">🪙 Tanga Yig'ish O'yini</option>
+          <option value="rotate">🌀 Aylanuvchi Tuzoqlar World</option>
+        </select>
+      </div>
+
+      <label style="font-size:0.85rem; color:#cbd5e1;">JavaScript (Three.js Engine) Kodi:</label>
+      <textarea id="code-editor" spellcheck="false"></textarea>
+      
+      <button class="btn" onclick="testCode()">▶ Kodni Sinash va Ishga Tushirish</button>
+      <div id="console" class="console">Kodni yozing va ishga tushirish tugmasini bosing...</div>
+      
+      <button class="btn btn-green" onclick="publish()">🌐 Dunyo Katalogiga Joylash</button>
+      <button class="btn btn-sub" onclick="exitStudio()">Dashboard'ga Qaytish</button>
+    </div>
+  </div>
+
+  <!-- 4. Play Screen -->
+  <div id="play" class="screen">
+    <div class="play-ui">
+      <div>
+        <b id="p-title" style="color:#f8fafc; font-size:1.1rem;">O'yin</b>
+        <span id="p-author" style="color:#38bdf8; font-weight:600; font-size:0.85rem;"></span>
+      </div>
+      <span class="online-badge" id="online-status">Singleplayer</span>
+      <button class="btn btn-sub" style="padding:0.4rem 0.8rem;" onclick="copyRoomCode()" id="share-btn">📋 Kodni Ulashish</button>
+      <button class="btn btn-red" style="padding:0.4rem 0.8rem;" onclick="stopPlay()">Chiqish</button>
+    </div>
+
+    <!-- Mobil Sensorli Boshqaruv Joystiklari -->
+    <div class="mobile-controls">
+      <div class="dpad" id="joystick-base">
+        <div class="dpad-stick" id="joystick-stick"></div>
+      </div>
+      <div class="jump-btn" id="mobile-jump-btn">JUMP</div>
+    </div>
+
+    <div id="play-view"></div>
+  </div>
+
+  <script>
+    /* --- SHABLON KODLAR (To'liq Parkour va Dinamik Roblox Dunyosi) --- */
+    const PRESETS = {
+      obby: `// ROBLOX PARKOUR OBBY ARENA
+// O'yinchi harakati va to'siqlar fizikasi
+if (keys['KeyW'] || keys['ArrowUp'] || joystick.y < -0.2) player.position.z -= 0.15;
+if (keys['KeyS'] || keys['ArrowDown'] || joystick.y > 0.2) player.position.z += 0.15;
+if (keys['KeyA'] || keys['ArrowLeft'] || joystick.x < -0.2) player.position.x -= 0.15;
+if (keys['KeyD'] || keys['ArrowRight'] || joystick.x > 0.2) player.position.x += 0.15;
+
+// Sakrash fizikasi
+if ((keys['Space'] || mobileJump) && player.position.y <= 0.6) {
+    player.userData.velocityY = 0.25;
+}
+if (player.userData.velocityY !== undefined) {
+    player.position.y += player.userData.velocityY;
+    player.userData.velocityY -= 0.012; // Tortishish kuchi
+    if (player.position.y <= 0.6) {
+        player.position.y = 0.6;
+        player.userData.velocityY = 0;
+    }
+}
+
+// Kamerani o'yinchi ortidan ergashtirish
+camera.position.x = player.position.x;
+camera.position.z = player.position.z + 7;
+camera.position.y = player.position.y + 4;
+camera.lookAt(player.position);`,
+
+      coin: `// TANGA YIG'ISH VA O'YIN
+if (keys['KeyW'] || keys['ArrowUp'] || joystick.y < -0.2) player.position.z -= 0.15;
+if (keys['KeyS'] || keys['ArrowDown'] || joystick.y > 0.2) player.position.z += 0.15;
+if (keys['KeyA'] || keys['ArrowLeft'] || joystick.x < -0.2) player.position.x -= 0.15;
+if (keys['KeyD'] || keys['ArrowRight'] || joystick.x > 0.2) player.position.x += 0.15;
+
+// Tangani aylantirish
+if (customGroup) {
+    customGroup.children.forEach(obj => {
+        if (obj.userData.isCoin) obj.rotation.y += 0.05;
+    });
+}
+camera.position.set(player.position.x, player.position.y + 5, player.position.z + 8);
+camera.lookAt(player.position);`,
+
+      rotate: `// AYLANUVCHI TUZOQLAR DUNYOSI
+player.rotation.y += 0.02;
+if (customGroup) customGroup.rotation.y += 0.01;
+camera.position.set(0, 6, 10);
+camera.lookAt(0,0,0);`
+    };
+
+    /* --- KLAVIATURA VA MOBIL JOYSTICK SOZLAMALARI --- */
+    const keys = {};
+    const joystick = { x: 0, y: 0 };
+    let mobileJump = false;
+
+    window.addEventListener('keydown', e => {
+      keys[e.code] = true;
+      if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code) &&
+          document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+      }
+    });
+    window.addEventListener('keyup', e => keys[e.code] = false);
+
+    // Joystick Touch logikasi
+    const base = document.getElementById('joystick-base');
+    const stick = document.getElementById('joystick-stick');
+    const jumpBtn = document.getElementById('mobile-jump-btn');
+
+    if (base && stick) {
+      let touchId = null;
+      base.addEventListener('touchstart', e => {
+        touchId = e.changedTouches[0].identifier;
+        updateJoystick(e.changedTouches[0]);
+      });
+      window.addEventListener('touchmove', e => {
+        if (touchId === null) return;
+        for (let t of e.changedTouches) {
+          if (t.identifier === touchId) updateJoystick(t);
+        }
+      });
+      const endTouch = e => {
+        for (let t of e.changedTouches) {
+          if (t.identifier === touchId) {
+            touchId = null;
+            joystick.x = 0; joystick.y = 0;
+            stick.style.transform = `translate(0px, 0px)`;
+          }
+        }
+      };
+      window.addEventListener('touchend', endTouch);
+      window.addEventListener('touchcancel', endTouch);
+
+      function updateJoystick(touch) {
+        const rect = base.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        let dx = touch.clientX - centerX;
+        let dy = touch.clientY - centerY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const maxDist = rect.width / 2;
+
+        if (dist > maxDist) {
+          dx = (dx / dist) * maxDist;
+          dy = (dy / dist) * maxDist;
+        }
+
+        stick.style.transform = `translate(${dx}px, ${dy}px)`;
+        joystick.x = dx / maxDist;
+        joystick.y = dy / maxDist;
+      }
+    }
+
+    if (jumpBtn) {
+      jumpBtn.addEventListener('touchstart', e => { e.preventDefault(); mobileJump = true; });
+      jumpBtn.addEventListener('touchend', () => { mobileJump = false; });
+    }
+
+    /* --- TIZIM MA'LUMOTLARI VA USER STORAGE --- */
+    let users = JSON.parse(localStorage.getItem('r_users_v2')) || [];
+    let games = JSON.parse(localStorage.getItem('r_games_v2')) || [
+      { id: 101, title: "Roblox Obstacle Parkour", author: "Admin", code: PRESETS.obby, color: "#2563eb" }
+    ];
+    let user = JSON.parse(localStorage.getItem('r_session_v2')) || null;
+    let currentFilter = 'all';
+
+    /* --- SCREEN RENDERER CONTROL --- */
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    window.onload = () => {
+      initPreviewAvatar();
+      document.getElementById('code-editor').value = PRESETS.obby;
+      if (user) {
+        setSession();
+      } else {
+        updateSkinPreview();
+      }
+      window.addEventListener('resize', onWindowResize);
+    };
+
+    function login() {
+      const u = document.getElementById('username').value.trim();
+      if (!u) return alert("Iltimos, nikneymingizni kiriting!");
+
+      user = {
+        id: Date.now(),
+        name: u,
+        skinColor: document.getElementById('skinColor').value,
+        shirtColor: document.getElementById('shirtColor').value,
+        hatType: document.getElementById('hatType').value
+      };
+
+      localStorage.setItem('r_session_v2', JSON.stringify(user));
+      setSession();
+    }
+
+    function setSession() {
+      document.getElementById('user-info').innerText = "O'yinchi: " + user.name;
+      showScreen('dash');
+      renderGames('all');
+    }
+
+    function logout() {
+      localStorage.removeItem('r_session_v2');
+      user = null;
+      showScreen('auth');
+      setTimeout(updateSkinPreview, 100);
+    }
+
+    function switchTab(type, btn) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active-tab'));
+      btn.classList.add('active-tab');
+      currentFilter = type;
+      renderGames(type);
+    }
+
+    function renderGames(filter) {
+      currentFilter = filter;
+      const list = document.getElementById('games-list');
+      list.innerHTML = '';
+      const items = filter === 'mine' ? games.filter(g => g.author === user.name) : games;
+
+      if (items.length === 0) {
+        list.innerHTML = `<p style="color:#94a3b8; grid-column: 1/-1; text-align:center; padding: 2rem;">Hozircha o'yinlar mavjud emas.</p>`;
+        return;
+      }
+
+      items.forEach(g => {
+        list.innerHTML += `
+          <div class="g-card">
+            <div>
+              <h3 style="color:#f8fafc; margin-bottom:0.4rem;">${g.title}</h3>
+              <p style="font-size:0.85rem; color:#94a3b8;">Muallif: <b style="color:#38bdf8;">${g.author}</b></p>
+            </div>
+            <div style="display:flex; gap:0.5rem; margin-top:1.2rem;">
+              <button class="btn btn-green" style="flex:1" onclick="playGame(${g.id})">▶ O'ynash</button>
+              <button class="btn btn-red" style="padding: 0.6rem 0.8rem;" title="O'chirish" onclick="deleteGame(${g.id})">🗑 O'chirish</button>
+            </div>
+          </div>`;
+      });
+    }
+
+    /* O'CHIRISH TUGMASI (TO'LIQ ISHLAYDI) */
+    function deleteGame(id) {
+      const g = games.find(x => x.id === id);
+      if (!g) return;
+
+      if (g.author !== user.name && user.name !== "Admin") {
+        return alert("❌ Xatolik: Siz faqat o'zingiz yaratgan o'yinlarni o'chira olasiz!");
+      }
+
+      if (confirm(`"${g.title}" o'yinini o'chirishni tasdiqlaysizmi?`)) {
+        games = games.filter(x => x.id !== id);
+        localStorage.setItem('r_games_v2', JSON.stringify(games));
+        renderGames(currentFilter);
+      }
+    }
+
+    /* --- 3D ROBLOX HUMANOID AVATAR CREATOR --- */
+    function createRobloxAvatar(config) {
+      const avatarGroup = new THREE.Group();
+      const skinMat = new THREE.MeshStandardMaterial({ color: config.skinColor || "#ffdbac", roughness: 0.4 });
+      const shirtMat = new THREE.MeshStandardMaterial({ color: config.shirtColor || "#2563eb", roughness: 0.3 });
+      const pantsMat = new THREE.MeshStandardMaterial({ color: "#1e293b", roughness: 0.5 });
+
+      // Torso (Tana)
+      const torso = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.0, 0.4), shirtMat);
+      torso.position.y = 0.9;
+      avatarGroup.add(torso);
+
+      // Bosh (Head)
+      const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), skinMat);
+      head.position.y = 1.7;
+      avatarGroup.add(head);
+
+      // Ko'zlar
+      const eyeMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+      const leftEye = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 0.02), eyeMat);
+      leftEye.position.set(-0.12, 1.75, 0.26);
+      const rightEye = leftEye.clone();
+      rightEye.position.x = 0.12;
+      avatarGroup.add(leftEye, rightEye);
+
+      // Qo'llar va Oqlar
+      const armGeo = new THREE.BoxGeometry(0.3, 0.9, 0.3);
+      const leftArm = new THREE.Mesh(armGeo, shirtMat);
+      leftArm.position.set(-0.6, 0.85, 0);
+      const rightArm = new THREE.Mesh(armGeo, shirtMat);
+      rightArm.position.set(0.6, 0.85, 0);
+
+      const legGeo = new THREE.BoxGeometry(0.35, 0.9, 0.35);
+      const leftLeg = new THREE.Mesh(legGeo, pantsMat);
+      leftLeg.position.set(-0.22, 0.45, 0);
+      const rightLeg = new THREE.Mesh(legGeo, pantsMat);
+      rightLeg.position.set(0.22, 0.45, 0);
+
+      avatarGroup.add(leftArm, rightArm, leftLeg, rightLeg);
+
+      // Aksessuarlar (Hat/Crown/Headphones)
+      if (config.hatType === 'crown') {
+        const crown = new THREE.Mesh(new THREE.ConeGeometry(0.3, 0.3, 5), new THREE.MeshStandardMaterial({ color: 0xfacc15, metalness: 0.8 }));
+        crown.position.y = 2.1;
+        avatarGroup.add(crown);
+      } else if (config.hatType === 'cap') {
+        const cap = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.15, 0.7), new THREE.MeshStandardMaterial({ color: 0xef4444 }));
+        cap.position.set(0, 1.98, 0.08);
+        avatarGroup.add(cap);
+      } else if (config.hatType === 'headphones') {
+        const hp = new THREE.Mesh(new THREE.BoxGeometry(0.65, 0.1, 0.1), new THREE.MeshStandardMaterial({ color: 0x10b981 }));
+        hp.position.set(0, 1.9, 0);
+        avatarGroup.add(hp);
+      }
+
+      return avatarGroup;
+    }
+
+    /* PREVIEW SCENE IN AUTH SCREEN */
+    let prevScene, prevCamera, prevRenderer, prevAvatar;
+    function initPreviewAvatar() {
+      const container = document.getElementById('skin-preview-container');
+      if (!container) return;
+      container.innerHTML = '';
+
+      prevScene = new THREE.Scene();
+      prevCamera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.1, 100);
+      prevCamera.position.set(0, 1.2, 3.2);
+
+      prevRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      prevRenderer.setSize(container.clientWidth, container.clientHeight);
+      container.appendChild(prevRenderer.domElement);
+
+      const light = new THREE.DirectionalLight(0xffffff, 1.3);
+      light.position.set(3, 5, 4);
+      prevScene.add(light, new THREE.AmbientLight(0xffffff, 0.6));
+
+      updateSkinPreview();
+
+      function animate() {
+        requestAnimationFrame(animate);
+        if (prevAvatar) prevAvatar.rotation.y += 0.01;
+        prevRenderer.render(prevScene, prevCamera);
+      }
+      animate();
+    }
+
+    function updateSkinPreview() {
+      if (!prevScene) return;
+      if (prevAvatar) prevScene.remove(prevAvatar);
+
+      const cfg = {
+        skinColor: document.getElementById('skinColor').value,
+        shirtColor: document.getElementById('shirtColor').value,
+        hatType: document.getElementById('hatType').value
+      };
+      prevAvatar = createRobloxAvatar(cfg);
+      prevScene.add(prevAvatar);
+    }
+
+    /* --- STUDIO EDITOR ENGINE --- */
+    let editorScene, editorCamera, editorRenderer, mainPlayerAvatar, editorAnimId = null;
+    let customObjectsGroup = null;
+
+    function openStudio() {
+      showScreen('studio');
+      setTimeout(() => {
+        if (!editorRenderer) initStudioEngine();
+        else onWindowResize();
+      }, 50);
+    }
+
+    function initStudioEngine() {
+      const container = document.getElementById('editor-view');
+      container.innerHTML = '';
+
+      editorScene = new THREE.Scene();
+      editorScene.background = new THREE.Color(0x020617);
+
+      editorCamera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+      editorCamera.position.set(0, 4, 7);
+
+      editorRenderer = new THREE.WebGLRenderer({ antialias: true });
+      editorRenderer.setSize(container.clientWidth, container.clientHeight);
+      container.appendChild(editorRenderer.domElement);
+
+      // Yorug'lik va Roblox Parkour Yeri
+      const light = new THREE.DirectionalLight(0xffffff, 1.2);
+      light.position.set(5, 10, 7);
+      const grid = new THREE.GridHelper(30, 30, 0x38bdf8, 0x1e293b);
+      editorScene.add(light, new THREE.AmbientLight(0xffffff, 0.5), grid);
+
+      // Asosiy Personaj (Roblox Avatar)
+      mainPlayerAvatar = createRobloxAvatar(user || {});
+      editorScene.add(mainPlayerAvatar);
+
+      // Qo'shimcha Ob'yektlar Guruhi
+      customObjectsGroup = new THREE.Group();
+      editorScene.add(customObjectsGroup);
+
+      // Boshlang'ich Parkour Bloklari Yaratish
+      setupParkourMap(customObjectsGroup);
+
+      testCode();
+    }
+
+    function setupParkourMap(group) {
+      const mat = new THREE.MeshStandardMaterial({ color: 0x38bdf8 });
+      for (let i = 0; i < 6; i++) {
+        const platform = new THREE.Mesh(new THREE.BoxGeometry(2, 0.4, 2), mat);
+        platform.position.set(Math.sin(i) * 2, 0, -i * 3.5);
+        group.add(platform);
+      }
+    }
+
+    function builderAddBlock() {
+      if (!customObjectsGroup) return;
+      const b = new THREE.Mesh(new THREE.BoxGeometry(1.5, 1.5, 1.5), new THREE.MeshStandardMaterial({ color: Math.random() * 0xffffff }));
+      b.position.set((Math.random() - 0.5) * 6, 0.75, (Math.random() - 0.5) * 6);
+      customObjectsGroup.add(b);
+    }
+
+    function builderAddCoin() {
+      if (!customObjectsGroup) return;
+      const coin = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.1, 16), new THREE.MeshStandardMaterial({ color: 0xfacc15, metalness: 0.8 }));
+      coin.rotation.x = Math.PI / 2;
+      coin.position.set((Math.random() - 0.5) * 6, 1.2, (Math.random() - 0.5) * 6);
+      coin.userData.isCoin = true;
+      customObjectsGroup.add(coin);
+    }
+
+    function builderAddLight() {
+      if (!editorScene) return;
+      const pLight = new THREE.PointLight(Math.random() * 0xffffff, 2, 10);
+      pLight.position.set(0, 3, 0);
+      editorScene.add(pLight);
+    }
+
+    function loadPresetScript(type) {
+      if (PRESETS[type]) {
+        document.getElementById('code-editor').value = PRESETS[type];
+        testCode();
+      }
+    }
+
+    function testCode() {
+      if (editorAnimId) cancelAnimationFrame(editorAnimId);
+      const code = document.getElementById('code-editor').value;
+      const con = document.getElementById('console');
+
+      function studioLoop() {
+        editorAnimId = requestAnimationFrame(studioLoop);
+        try {
+          // BARCHA THREE.JS KODLARI VA BUILDER APILARINI ISHLATISH
+          const scriptFunc = new Function('player', 'scene', 'camera', 'keys', 'joystick', 'mobileJump', 'THREE', 'customGroup', code);
+          scriptFunc(mainPlayerAvatar, editorScene, editorCamera, keys, joystick, mobileJump, THREE, customObjectsGroup);
+          con.style.color = "#4ade80";
+          con.innerText = "✅ Kod muvaffaqiyatli ishlamoqda! Boshqarish: WASD / Strelkalar / Mobil Joystick.";
+        } catch (e) {
+          cancelAnimationFrame(editorAnimId);
+          con.style.color = "#f87171";
+          con.innerText = "❌ Skript Xatoligi: " + e.message;
+        }
+        editorRenderer.render(editorScene, editorCamera);
+      }
+      studioLoop();
+    }
+
+    function publish() {
+      const t = document.getElementById('g-title').value.trim();
+      if (!t) return alert("O'yinga nom bering!");
+
+      games.push({
+        id: Date.now(),
+        title: t,
+        author: user.name,
+        code: document.getElementById('code-editor').value
+      });
+
+      localStorage.setItem('r_games_v2', JSON.stringify(games));
+      alert("O'yin katalogga va global serverga joylandi!");
+      exitStudio();
+    }
+
+    function exitStudio() {
+      if (editorAnimId) cancelAnimationFrame(editorAnimId);
+      showScreen('dash');
+      renderGames(currentFilter);
+    }
+
+    /* --- GLOBAL MULTIPLAYER ENGINE (PeerJS / WebRTC) --- */
+    let peer = null;
+    let peerConnections = [];
+    let isHost = false;
+    let playAnimId = null;
+    let currentRoomId = null;
+    let remotePlayers = {};
+
+    function playGame(id, forceRoomId = null) {
+      const g = games.find(x => x.id === id) || games[0];
+      document.getElementById('p-title').innerText = g.title;
+      document.getElementById('p-author').innerText = "(" + g.author + ")";
+      showScreen('play');
+
+      const container = document.getElementById('play-view');
+      container.innerHTML = '';
+
+      const pScene = new THREE.Scene();
+      pScene.background = new THREE.Color(0x020617);
+
+      const pCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      const pRenderer = new THREE.WebGLRenderer({ antialias: true });
+      pRenderer.setSize(window.innerWidth, window.innerHeight);
+      container.appendChild(pRenderer.domElement);
+
+      const light = new THREE.DirectionalLight(0xffffff, 1.2);
+      light.position.set(5, 10, 7);
+      pScene.add(light, new THREE.AmbientLight(0xffffff, 0.5), new THREE.GridHelper(30, 30, 0x38bdf8, 0x1e293b));
+
+      // Asosiy O'yinchi
+      const pAvatar = createRobloxAvatar(user || {});
+      pScene.add(pAvatar);
+
+      const pCustomGroup = new THREE.Group();
+      pScene.add(pCustomGroup);
+      setupParkourMap(pCustomGroup);
+
+      // PEERJS NETWORK INIT
+      initGlobalMultiplayer(pScene, pAvatar, forceRoomId);
+
+      function playLoop() {
+        if (!document.getElementById('play').classList.contains('active')) return;
+        playAnimId = requestAnimationFrame(playLoop);
+
+        try {
+          const playFunc = new Function('player', 'scene', 'camera', 'keys', 'joystick', 'mobileJump', 'THREE', 'customGroup', g.code);
+          playFunc(pAvatar, pScene, pCamera, keys, joystick, mobileJump, THREE, pCustomGroup);
+        } catch (e) {}
+
+        // O'z pozitsiyamizni boshqa o'yinchilarga uzatish
+        broadcastPosition(pAvatar);
+
+        pRenderer.render(pScene, pCamera);
+      }
+      playLoop();
+    }
+
+    function initGlobalMultiplayer(scene, localAvatar, forceRoomId) {
+      const statusBadge = document.getElementById('online-status');
+      statusBadge.innerText = "Ulanmoqda...";
+
+      // Internet orqali bog'lanish uchun xavfsiz PeerJS serveri
+      peer = new Peer();
+
+      peer.on('open', id => {
+        currentRoomId = forceRoomId || id;
+        statusBadge.innerText = "🌐 Xona: " + currentRoomId;
+
+        if (forceRoomId) {
+          // Xonaga ulanuvchi (Client)
+          const conn = peer.connect(forceRoomId);
+          setupConnection(conn, scene);
+        } else {
+          // Xona egasi (Host)
+          isHost = true;
+          peer.on('connection', conn => {
+            setupConnection(conn, scene);
+          });
+        }
+      });
+    }
+
+    function setupConnection(conn, scene) {
+      peerConnections.push(conn);
+      conn.on('data', data => {
+        if (data.type === 'sync') {
+          if (!remotePlayers[data.id]) {
+            // Yangi onlayn o'yinchini 3D dunyoga qo'shish
+            const rMesh = createRobloxAvatar(data.config || {});
+            scene.add(rMesh);
+            remotePlayers[data.id] = rMesh;
+          }
+          remotePlayers[data.id].position.set(data.x, data.y, data.z);
+        }
+      });
+    }
+
+    function broadcastPosition(localAvatar) {
+      if (!peer || peerConnections.length === 0) return;
+      const payload = {
+        type: 'sync',
+        id: peer.id,
+        x: localAvatar.position.x,
+        y: localAvatar.position.y,
+        z: localAvatar.position.z,
+        config: user
+      };
+      peerConnections.forEach(c => { if (c.open) c.send(payload); });
+    }
+
+    function joinOnlineRoom() {
+      const roomCode = document.getElementById('join-room-id').value.trim();
+      if (!roomCode) return alert("Xona kodini kiriting!");
+      playGame(101, roomCode);
+    }
+
+    function copyRoomCode() {
+      if (currentRoomId) {
+        navigator.clipboard.writeText(currentRoomId);
+        alert("Xona kodi nusxalandi: " + currentRoomId + "\nDo'stlaringizga yuboring!");
+      }
+    }
+
+    function stopPlay() {
+      if (playAnimId) cancelAnimationFrame(playAnimId);
+      if (peer) peer.destroy();
+      remotePlayers = {};
+      peerConnections = [];
+      showScreen('dash');
+    }
+
+    function onWindowResize() {
+      if (document.getElementById('studio').classList.contains('active') && editorRenderer && editorCamera) {
+        const c = document.getElementById('editor-view');
+        editorCamera.aspect = c.clientWidth / c.clientHeight;
+        editorCamera.updateProjectionMatrix();
+        editorRenderer.setSize(c.clientWidth, c.clientHeight);
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="uz" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini Car Collection Uz - Premium Kolleksion Avtomobillar</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#080c14',
+                        cardBg: '#111827',
+                        cardHover: '#1f2937',
+                        accentGold: '#f59e0b',
+                        accentHover: '#d97706',
+                        darkBorder: '#1f2937'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome 6 Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #080c14;
+            color: #f3f4f6;
+            overflow-x: hidden;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #080c14;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1f2937;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #374151;
+        }
+        .glass-nav {
+            background: rgba(8, 12, 20, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+        .hero-glow {
+            background: radial-gradient(circle at 50% 30%, rgba(245, 158, 11, 0.15) 0%, rgba(8, 12, 20, 0) 70%);
+        }
+        .card-shadow {
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+        }
+        .gold-gradient {
+            background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 50%, #d97706 100%);
+        }
+        .gold-text {
+            background: linear-gradient(135deg, #ffffff 0%, #fef3c7 50%, #f59e0b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body class="bg-darkBg text-gray-100 min-h-screen flex flex-col justify-between selection:bg-amber-500 selection:text-black">
+
+    <header class="sticky top-0 z-50 glass-nav border-b border-gray-800/80 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <!-- Brand Logo -->
+            <div onclick="switchPage('home')" class="flex items-center space-x-3 cursor-pointer group">
+                <div class="w-11 h-11 rounded-2xl gold-gradient flex items-center justify-center shadow-lg shadow-amber-500/20 transform group-hover:scale-105 transition duration-300">
+                    <i class="fa-solid fa-car-side text-black text-xl font-black"></i>
+                </div>
+                <div>
+                    <span class="text-lg sm:text-xl font-extrabold tracking-wider text-white group-hover:text-amber-400 transition">MINI CAR UZ</span>
+                    <span class="block text-[10px] text-amber-400 font-bold tracking-widest uppercase">Kolleksion Avto</span>
+                </div>
+            </div>
+
+            <!-- Desktop Navigation Links -->
+            <nav class="hidden md:flex items-center space-x-1 lg:space-x-2">
+                <button onclick="switchPage('home')" id="nav-btn-home" class="nav-link px-4 py-2 rounded-xl text-sm font-semibold transition text-amber-400 bg-amber-500/10 border border-amber-500/20">
+                    <i class="fa-solid fa-house mr-1.5"></i> Bosh sahifa
+                </button>
+                <button onclick="switchPage('catalog')" id="nav-btn-catalog" class="nav-link px-4 py-2 rounded-xl text-sm font-semibold transition text-gray-300 hover:text-white hover:bg-gray-800/60">
+                    <i class="fa-solid fa-table-cells-large mr-1.5"></i> Katalog
+                </button>
+                <button onclick="switchPage('about')" id="nav-btn-about" class="nav-link px-4 py-2 rounded-xl text-sm font-semibold transition text-gray-300 hover:text-white hover:bg-gray-800/60">
+                    <i class="fa-solid fa-circle-info mr-1.5"></i> Biz haqimizda
+                </button>
+                <button onclick="switchPage('delivery')" id="nav-btn-delivery" class="nav-link px-4 py-2 rounded-xl text-sm font-semibold transition text-gray-300 hover:text-white hover:bg-gray-800/60">
+                    <i class="fa-solid fa-truck-fast mr-1.5"></i> Yetkazish & To'lov
+                </button>
+                <button onclick="switchPage('contact')" id="nav-btn-contact" class="nav-link px-4 py-2 rounded-xl text-sm font-semibold transition text-gray-300 hover:text-white hover:bg-gray-800/60">
+                    <i class="fa-solid fa-headset mr-1.5"></i> Aloqa
+                </button>
+            </nav>
+
+            <!-- Actions Header -->
+            <div class="flex items-center space-x-3">
+                <button onclick="openSettingsModal()" title="Telegram Bot Sozlamalari" class="p-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-amber-400 transition border border-gray-700 flex items-center justify-center">
+                    <i class="fa-solid fa-gear text-base"></i>
+                </button>
+                <a href="https://t.me/MiniCarCollectionUz" target="_blank" class="hidden sm:flex items-center space-x-2 px-4 py-2 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/30 text-sm font-semibold transition">
+                    <i class="fa-brands fa-telegram text-lg"></i>
+                    <span>@MiniCarCollectionUz</span>
+                </a>
+                <!-- Mobile Menu Button -->
+                <button onclick="toggleMobileMenu()" class="md:hidden p-2.5 rounded-xl bg-gray-800 text-gray-300 hover:text-white focus:outline-none">
+                    <i id="mobileMenuIcon" class="fa-solid fa-bars text-lg"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Nav Drawer -->
+        <div id="mobileMenu" class="hidden md:hidden bg-cardBg border-b border-gray-800 px-6 py-4 space-y-2">
+            <button onclick="switchPage('home'); toggleMobileMenu();" class="w-full text-left px-4 py-3 rounded-xl font-semibold text-white hover:bg-gray-800 flex items-center space-x-3">
+                <i class="fa-solid fa-house text-amber-400 w-5"></i><span>Bosh sahifa</span>
+            </button>
+            <button onclick="switchPage('catalog'); toggleMobileMenu();" class="w-full text-left px-4 py-3 rounded-xl font-semibold text-white hover:bg-gray-800 flex items-center space-x-3">
+                <i class="fa-solid fa-table-cells-large text-amber-400 w-5"></i><span>Katalog</span>
+            </button>
+            <button onclick="switchPage('about'); toggleMobileMenu();" class="w-full text-left px-4 py-3 rounded-xl font-semibold text-white hover:bg-gray-800 flex items-center space-x-3">
+                <i class="fa-solid fa-circle-info text-amber-400 w-5"></i><span>Biz haqimizda</span>
+            </button>
+            <button onclick="switchPage('delivery'); toggleMobileMenu();" class="w-full text-left px-4 py-3 rounded-xl font-semibold text-white hover:bg-gray-800 flex items-center space-x-3">
+                <i class="fa-solid fa-truck-fast text-amber-400 w-5"></i><span>Yetkazish & To'lov</span>
+            </button>
+            <button onclick="switchPage('contact'); toggleMobileMenu();" class="w-full text-left px-4 py-3 rounded-xl font-semibold text-white hover:bg-gray-800 flex items-center space-x-3">
+                <i class="fa-solid fa-headset text-amber-400 w-5"></i><span>Aloqa</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-grow">
+
+        <!-- ================= PAGE 1: HOME PAGE ================= -->
+        <div id="page-home" class="page-view animate-fadeIn">
+            <!-- Hero Banner Section -->
+            <section class="relative overflow-hidden py-20 lg:py-32 hero-glow border-b border-gray-800/60">
+                <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#f59e0b_1px,transparent_1px)] [background-size:24px_24px]"></div>
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                        <div class="lg:col-span-7 text-center lg:text-left">
+                            <span class="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 mb-6 shadow-sm">
+                                <i class="fa-solid fa-crown text-amber-400"></i>
+                                <span>O'zbekistondagi Eng Sifatli 1:18 va 1:24 Kolleksiyalar</span>
+                            </span>
+                            <h1 class="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight text-white mb-6 uppercase leading-tight">
+                                Orzuingizdagi <span class="gold-text">Mini Avtomobillar</span>
+                            </h1>
+                            <p class="text-base sm:text-lg text-gray-400 mb-8 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
+                                Yuqori sifatli metall quyma (Die-cast), eshiklari va kapoti ochiladigan eksklyuziv sportkar va SUV modellari. To‘g‘ridan-to‘g‘ri buyurtma bering va avtomatik ravishda Telegram botimiz orqali rasmiylashtiring.
+                            </p>
+                            <div class="flex flex-col sm:flex-row justify-center lg:justify-start items-center space-y-4 sm:space-y-0 sm:space-x-4">
+                                <button onclick="switchPage('catalog')" class="w-full sm:w-auto px-8 py-4 rounded-2xl gold-gradient text-black font-extrabold transition shadow-xl shadow-amber-500/25 flex items-center justify-center space-x-2 text-base hover:opacity-95 transform hover:-translate-y-0.5">
+                                    <span>Katalogni Ko'rish</span>
+                                    <i class="fa-solid fa-arrow-right"></i>
+                                </button>
+                                <a href="https://t.me/MiniCarCollectionUz" target="_blank" class="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gray-900 hover:bg-gray-800 text-white font-bold transition border border-gray-700 flex items-center justify-center space-x-2 text-base">
+                                    <i class="fa-brands fa-telegram text-sky-400 text-xl"></i>
+                                    <span>Telegram Kanalimiz</span>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="lg:col-span-5 relative">
+                            <div class="relative mx-auto w-full max-w-md lg:max-w-none">
+                                <div class="absolute -inset-1.5 bg-gradient-to-r from-amber-500 to-yellow-300 rounded-3xl blur-xl opacity-30 animate-pulse"></div>
+                                <div class="relative bg-cardBg rounded-3xl border border-gray-800 p-3 card-shadow overflow-hidden">
+                                    <img src="https://images.unsplash.com/photo-1544829099-b9a0c07fad1a?auto=format&fit=crop&w=1000&q=80" alt="Featured Car" class="w-full h-80 sm:h-96 object-cover rounded-2xl transform hover:scale-105 transition duration-700">
+                                    <div class="absolute bottom-6 left-6 right-6 p-4 rounded-2xl bg-black/70 backdrop-blur-md border border-white/10 flex items-center justify-between">
+                                        <div>
+                                            <span class="text-xs font-bold text-amber-400 uppercase tracking-widest">TOP MODEL</span>
+                                            <h4 class="text-white font-extrabold text-lg">Lamborghini Sián FKP 37</h4>
+                                        </div>
+                                        <span class="px-3 py-1.5 rounded-xl bg-amber-500 text-black font-extrabold text-sm">320,000 so'm</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Features Highlights -->
+            <section class="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="p-8 rounded-3xl bg-cardBg border border-gray-800 hover:border-amber-500/40 transition duration-300 flex flex-col items-start">
+                        <div class="w-14 h-14 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-400 text-2xl font-bold mb-6 border border-amber-500/20">
+                            <i class="fa-solid fa-shield-halved"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2">100% Original Sifat</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed">Barcha mini mashinalar original litsenziyalangan zavoddan keltirilgan va metall qotishmadan tayyorlangan.</p>
+                    </div>
+                    <div class="p-8 rounded-3xl bg-cardBg border border-gray-800 hover:border-amber-500/40 transition duration-300 flex flex-col items-start">
+                        <div class="w-14 h-14 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-400 text-2xl font-bold mb-6 border border-amber-500/20">
+                            <i class="fa-solid fa-truck-fast"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2">Tezkor Yetkazish</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed">Toshkent shahri bo'yicha 24 soat ichida, O'zbekistonning boshqa viloyatlariga pochta orqali tezkor yetkazib beramiz.</p>
+                    </div>
+                    <div class="p-8 rounded-3xl bg-cardBg border border-gray-800 hover:border-amber-500/40 transition duration-300 flex flex-col items-start">
+                        <div class="w-14 h-14 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-400 text-2xl font-bold mb-6 border border-amber-500/20">
+                            <i class="fa-solid fa-headset"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2">Telegram Bot Integratsiyasi</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed">Buyurtmalar avtomatik ravishda to'g'ridan-to'g'ri @MiniCarCollectionUz rasmiy botiga kelib tushadi.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Featured Products Preview -->
+            <section class="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-gray-800/80">
+                <div class="flex flex-col md:flex-row md:items-end justify-between mb-12">
+                    <div>
+                        <span class="text-xs font-bold uppercase tracking-widest text-amber-400 mb-2 block">Eng Sara Modellar</span>
+                        <h2 class="text-3xl sm:text-4xl font-black text-white">Xaridorlar Tanlovi</h2>
+                    </div>
+                    <button onclick="switchPage('catalog')" class="mt-4 md:mt-0 text-amber-400 hover:text-amber-300 font-bold text-sm flex items-center space-x-2 transition">
+                        <span>Barcha kataloglarni ko'rish</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+                <div id="home-featured-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Injected via JavaScript -->
+                </div>
+            </section>
+        </div>
+
+        <!-- ================= PAGE 2: CATALOG PAGE ================= -->
+        <div id="page-catalog" class="page-view hidden animate-fadeIn">
+            <section class="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center max-w-3xl mx-auto mb-12">
+                    <span class="text-xs font-bold uppercase tracking-widest text-amber-400 mb-2 block">To'liq Assortiment</span>
+                    <h1 class="text-4xl font-black text-white mb-4">Mini Mashinalar Katalogi</h1>
+                    <p class="text-gray-400 text-sm sm:text-base">O'zingizga yoqqan kolleksion avtomobilni tanlang va "Sotib olish" tugmasi orqali buyurtmani rasmiylashtiring.</p>
+                </div>
+
+                <!-- Search and Filters Bar -->
+                <div class="bg-cardBg border border-gray-800 rounded-2xl p-4 sm:p-6 mb-10 flex flex-col md:flex-row gap-4 items-center justify-between">
+                    <div class="relative w-full md:w-96">
+                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                        <input type="text" id="searchInput" oninput="filterCatalog()" placeholder="Model nomi bo'yicha qidirish..." class="w-full pl-11 pr-4 py-3 rounded-xl bg-darkBg border border-gray-700 text-white focus:outline-none focus:border-amber-500 text-sm transition">
+                    </div>
+                    <div class="flex items-center space-x-3 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
+                        <button onclick="filterScale('all')" class="scale-filter-btn px-4 py-2.5 rounded-xl bg-amber-500 text-black font-bold text-xs whitespace-nowrap transition">Barchasi</button>
+                        <button onclick="filterScale('1:18')" class="scale-filter-btn px-4 py-2.5 rounded-xl bg-gray-800 text-gray-300 hover:text-white font-bold text-xs whitespace-nowrap transition border border-gray-700">1:18 Scale</button>
+                        <button onclick="filterScale('1:24')" class="scale-filter-btn px-4 py-2.5 rounded-xl bg-gray-800 text-gray-300 hover:text-white font-bold text-xs whitespace-nowrap transition border border-gray-700">1:24 Scale</button>
+                    </div>
+                </div>
+
+                <!-- Catalog Grid -->
+                <div id="catalog-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Injected via JavaScript -->
+                </div>
+            </section>
+        </div>
+
+        <!-- ================= PAGE 3: ABOUT US PAGE ================= -->
+        <div id="page-about" class="page-view hidden animate-fadeIn">
+            <section class="py-16 lg:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center mb-20">
+                    <div class="lg:col-span-6">
+                        <span class="text-xs font-bold uppercase tracking-widest text-amber-400 mb-2 block">Biz Haqimizda</span>
+                        <h1 class="text-4xl sm:text-5xl font-black text-white mb-6">Mini Car Collection Uz Tarixi va Maqsadi</h1>
+                        <p class="text-gray-300 text-base leading-relaxed mb-6">
+                            Biz O'zbekistonda diecast (metall quyma) avtomobil modellarini yig'ish va kolleksionerlik madaniyatini rivojlantirish maqsadida tashkil topganmiz. Toshkent shahridan boshlangan loyihamiz bugungi kunda butun respublika bo'ylab minglab avtoquruvchi va ishqibozlarga xizmat ko'rsatmoqda.
+                        </p>
+                        <p class="text-gray-400 text-sm leading-relaxed mb-8">
+                            Katalogimizdagi har bir mashina o'zining noyob detallari, haqiqiy avtomobillarning kichik nusxasi sifatidagi mukammalligi bilan ajralib turadi.
+                        </p>
+                        <div class="grid grid-cols-3 gap-4 border-t border-gray-800 pt-6">
+                            <div>
+                                <span class="block text-3xl font-black text-amber-400">50+</span>
+                                <span class="text-xs text-gray-400 font-medium">Modellar turi</span>
+                            </div>
+                            <div>
+                                <span class="block text-3xl font-black text-amber-400">1000+</span>
+                                <span class="text-xs text-gray-400 font-medium">Mamnun mijozlar</span>
+                            </div>
+                            <div>
+                                <span class="block text-3xl font-black text-amber-400">14ta</span>
+                                <span class="text-xs text-gray-400 font-medium">Viloyat bo'ylab</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="lg:col-span-6">
+                        <div class="relative">
+                            <div class="absolute -inset-2 bg-gradient-to-tr from-amber-500 to-yellow-300 rounded-3xl blur-xl opacity-20"></div>
+                            <div class="relative rounded-3xl overflow-hidden border border-gray-800 bg-cardBg p-3">
+                                <img src="https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?auto=format&fit=crop&w=1000&q=80" alt="Showroom" class="w-full h-[400px] object-cover rounded-2xl">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ================= PAGE 4: DELIVERY & PAYMENT PAGE ================= -->
+        <div id="page-delivery" class="page-view hidden animate-fadeIn">
+            <section class="py-16 lg:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center max-w-3xl mx-auto mb-16">
+                    <span class="text-xs font-bold uppercase tracking-widest text-amber-400 mb-2 block">Qulay Shartlar</span>
+                    <h1 class="text-4xl font-black text-white mb-4">Yetkazib berish va To'lov tartibi</h1>
+                    <p class="text-gray-400 text-base">Buyurtmangizni qanday qabul qilib olishingiz va to'lovni qanday amalga oshirishingiz mumkinligi haqida batafsil.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+                    <!-- Delivery Card -->
+                    <div class="p-8 rounded-3xl bg-cardBg border border-gray-800">
+                        <div class="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-400 text-xl font-bold mb-6 border border-amber-500/20">
+                            <i class="fa-solid fa-truck-ramp-box"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-white mb-4">Yetkazib berish (Dostavka)</h3>
+                        <ul class="space-y-4 text-gray-300 text-sm">
+                            <li class="flex items-start space-x-3">
+                                <i class="fa-solid fa-circle-check text-amber-400 mt-1"></i>
+                                <span><strong>Toshkent shahri bo'ylab:</strong> Yandeks orqali yoki kurerimiz tomonidan 24 soat ichida eshigingizgacha yetkaziladi.</span>
+                            </li>
+                            <li class="flex items-start space-x-3">
+                                <i class="fa-solid fa-circle-check text-amber-400 mt-1"></i>
+                                <span><strong>Viloyatlar bo'ylab:</strong> BTS, Fargo yoki O'zbekiston pochtasi orqali 2-3 ish kuni mobaynida jo'natiladi.</span>
+                            </li>
+                            <li class="flex items-start space-x-3">
+                                <i class="fa-solid fa-circle-check text-amber-400 mt-1"></i>
+                                <span>Mahsulotlar maxsus qattiq qutiga qadoqlanib, shikastlanmagan holda yetkazilishiga kafolat beramiz.</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Payment Card -->
+                    <div class="p-8 rounded-3xl bg-cardBg border border-gray-800">
+                        <div class="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-400 text-xl font-bold mb-6 border border-amber-500/20">
+                            <i class="fa-solid fa-credit-card"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-white mb-4">To'lov Usullari</h3>
+                        <ul class="space-y-4 text-gray-300 text-sm">
+                            <li class="flex items-start space-x-3">
+                                <i class="fa-solid fa-circle-check text-amber-400 mt-1"></i>
+                                <span><strong>Plastik kartalar orqali:</strong> Click, Payme yoki Uzum Pay ilovalari orqali onlayn o'tkazma.</span>
+                            </li>
+                            <li class="flex items-start space-x-3">
+                                <i class="fa-solid fa-circle-check text-amber-400 mt-1"></i>
+                                <span><strong>Naqd pulda:</strong> Toshkent shahrida buyurtmani qabul qilib olgandan so'ng kurerga naqd pulda to'lash imkoniyati.</span>
+                            </li>
+                            <li class="flex items-start space-x-3">
+                                <i class="fa-solid fa-circle-check text-amber-400 mt-1"></i>
+                                <span>Buyurtma tasdiqlangach, Telegram bot orqali barcha hisob-kitob tafsilotlari yuboriladi.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ================= PAGE 5: CONTACT PAGE ================= -->
+        <div id="page-contact" class="page-view hidden animate-fadeIn">
+            <section class="py-16 lg:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center max-w-3xl mx-auto mb-16">
+                    <span class="text-xs font-bold uppercase tracking-widest text-amber-400 mb-2 block">Aloqa Markazi</span>
+                    <h1 class="text-4xl font-black text-white mb-4">Biz bilan bog'lanish</h1>
+                    <p class="text-gray-400 text-base">Savollaringiz bormi yoki maxsus model buyurtma qilmoqchimisiz? Bizga yozing!</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+                    <div class="p-8 rounded-3xl bg-cardBg border border-gray-800 text-center">
+                        <div class="w-14 h-14 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-400 text-2xl mx-auto mb-6 border border-amber-500/20">
+                            <i class="fa-brands fa-telegram"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-white mb-2">Telegram Kanal</h3>
+                        <p class="text-gray-400 text-sm mb-4">Rasmiy kanalimizga obuna bo'ling</p>
+                        <a href="https://t.me/MiniCarCollectionUz" target="_blank" class="text-amber-400 hover:text-amber-300 font-bold text-sm">@MiniCarCollectionUz</a>
+                    </div>
+                    <div class="p-8 rounded-3xl bg-cardBg border border-gray-800 text-center">
+                        <div class="w-14 h-14 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-400 text-2xl mx-auto mb-6 border border-amber-500/20">
+                            <i class="fa-solid fa-phone-volume"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-white mb-2">Telefon Raqam</h3>
+                        <p class="text-gray-400 text-sm mb-4">Qo'ng'iroq qiling</p>
+                        <span class="text-amber-400 font-bold text-sm">+998 90 123 45 67</span>
+                    </div>
+                    <div class="p-8 rounded-3xl bg-cardBg border border-gray-800 text-center">
+                        <div class="w-14 h-14 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-400 text-2xl mx-auto mb-6 border border-amber-500/20">
+                            <i class="fa-solid fa-location-dot"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-white mb-2">Manzil</h3>
+                        <p class="text-gray-400 text-sm mb-4">Bosh ofis</p>
+                        <span class="text-amber-400 font-bold text-sm">Toshkent sh., Chilonzor tumani</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+    </main>
+
+    <footer class="border-t border-gray-800 bg-[#060910] py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between text-center md:text-left space-y-6 md:space-y-0">
+            <div>
+                <span class="text-lg font-extrabold text-white tracking-wider">Mini Car Collection Uz</span>
+                <p class="text-xs text-gray-500 mt-1">Barcha huquqlar himoyalangan © 2026. O'zbekiston bo'ylab yetkazib berish.</p>
+            </div>
+            <div class="flex space-x-6 text-gray-400 text-xl">
+                <a href="https://t.me/MiniCarCollectionUz" target="_blank" class="hover:text-amber-400 transition"><i class="fa-brands fa-telegram"></i></a>
+                <a href="#" class="hover:text-amber-400 transition"><i class="fa-brands fa-instagram"></i></a>
+                <a href="#" class="hover:text-amber-400 transition"><i class="fa-brands fa-facebook"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Order Modal -->
+    <div id="orderModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md hidden animate-fadeIn">
+        <div class="bg-cardBg border border-gray-800 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl">
+            <div class="px-6 py-5 border-b border-gray-800 flex items-center justify-between bg-[#161f33]">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 rounded-lg gold-gradient flex items-center justify-center text-black font-bold">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white">Buyurtma berish</h3>
+                </div>
+                <button onclick="closeOrderModal()" class="text-gray-400 hover:text-white transition w-8 h-8 rounded-full flex items-center justify-center bg-gray-800">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <form id="orderForm" onsubmit="submitOrder(event)" class="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+                <input type="hidden" id="modalCarId">
+                <input type="hidden" id="modalCarName">
+                <input type="hidden" id="modalCarPrice">
+                <input type="hidden" id="modalCarImgUrl">
+
+                <div class="p-4 rounded-2xl bg-darkBg border border-gray-800 flex items-center space-x-4">
+                    <img id="modalCarImg" src="" alt="Car" class="w-20 h-16 object-cover rounded-xl border border-gray-700">
+                    <div>
+                        <h4 id="modalCarTitle" class="font-bold text-white text-base"></h4>
+                        <p id="modalCarPriceText" class="text-amber-400 font-semibold text-sm mt-1"></p>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Ismingiz *</label>
+                    <input type="text" id="clientName" required placeholder="Masalan: Bekzod" class="w-full px-4 py-3 rounded-xl bg-darkBg border border-gray-700 text-white focus:outline-none focus:border-amber-500 text-sm transition">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Telefon raqamingiz *</label>
+                    <input type="tel" id="clientPhone" required placeholder="+998 90 123 45 67" class="w-full px-4 py-3 rounded-xl bg-darkBg border border-gray-700 text-white focus:outline-none focus:border-amber-500 text-sm transition">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Yetkazib berish manzili / Shahar *</label>
+                    <textarea id="clientAddress" required rows="2" placeholder="Toshkent sh., Chilonzor tumani..." class="w-full px-4 py-3 rounded-xl bg-darkBg border border-gray-700 text-white focus:outline-none focus:border-amber-500 text-sm transition resize-none"></textarea>
+                </div>
+
+                <button type="submit" class="w-full py-4 rounded-xl gold-gradient text-black font-extrabold text-base shadow-lg shadow-amber-500/20 hover:opacity-95 transition flex items-center justify-center space-x-2">
+                    <i class="fa-brands fa-telegram text-xl"></i>
+                    <span>Telegram Botga Yuborish</span>
+                </button>
+
+                <!-- GAMES PLAY BUTTON -->
+                <div class="pt-2 border-t border-gray-800">
+                    <button type="button" onclick="openGameModal()" class="w-full py-3.5 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/30 font-bold text-sm transition flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-gamepad text-lg"></i>
+                        <span>🎮 Games Play (Mashinada Yurish O'yini)</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MINI GAME MODAL -->
+    <div id="gameModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md hidden animate-fadeIn">
+        <div class="bg-cardBg border border-gray-800 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl relative">
+            <div class="px-6 py-4 border-b border-gray-800 flex items-center justify-between bg-[#161f33]">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-gamepad text-amber-400 text-lg"></i>
+                    <h3 id="gameModalTitle" class="text-base font-bold text-white">Mini Car Racing Game</h3>
+                </div>
+                <button onclick="closeGameModal()" class="text-gray-400 hover:text-white transition w-8 h-8 rounded-full flex items-center justify-center bg-gray-800">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Game Arena Canvas -->
+            <div class="p-4 flex flex-col items-center">
+                <div class="flex justify-between w-full mb-2 px-2 text-xs font-bold text-gray-400">
+                    <span>Ball: <span id="gameScore" class="text-amber-400 text-sm">0</span></span>
+                    <span>Boshqaruv: ⬅️ ➡️ yoki tugmalar</span>
+                </div>
+
+                <div id="gameContainer" class="relative w-[320px] h-[420px] bg-gray-950 border-2 border-gray-800 rounded-2xl overflow-hidden shadow-inner flex justify-center">
+                    <!-- Road Lane Lines -->
+                    <div class="absolute inset-y-0 left-1/3 w-1 border-r-2 border-dashed border-gray-700 opacity-40"></div>
+                    <div class="absolute inset-y-0 left-2/3 w-1 border-r-2 border-dashed border-gray-700 opacity-40"></div>
+
+                    <!-- Player Car (Using the exact selected car image!) -->
+                    <div id="playerCar" style="left: 130px; bottom: 20px;" class="absolute w-14 h-24 transition-all duration-75">
+                        <img id="gameCarSkin" src="" alt="Skin" class="w-full h-full object-cover rounded-xl border border-amber-500 shadow-lg shadow-amber-500/30">
+                    </div>
+
+                    <!-- Obstacle Cars will be spawned here -->
+                    <div id="obstaclesLayer" class="absolute inset-0 pointer-events-none"></div>
+
+                    <!-- Game Over Overlay -->
+                    <div id="gameOverScreen" class="absolute inset-0 bg-black/85 backdrop-blur-sm hidden flex flex-col items-center justify-center p-6 text-center z-20">
+                        <div class="w-14 h-14 rounded-2xl bg-red-500/20 text-red-500 flex items-center justify-center text-2xl mb-3 border border-red-500/30">
+                            <i class="fa-solid fa-car-burst"></i>
+                        </div>
+                        <h4 class="text-xl font-black text-white mb-1">Avariya! O'yin tugadi</h4>
+                        <p class="text-xs text-gray-400 mb-4">To'plagan balingiz: <span id="finalScore" class="text-amber-400 font-bold">0</span></p>
+                        <button onclick="restartGame()" class="px-6 py-3 rounded-xl gold-gradient text-black font-extrabold text-sm shadow-lg shadow-amber-500/20">
+                            Qaytadan o'ynash
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Touch Controls for Mobile / Click -->
+                <div class="flex justify-between w-full mt-4 gap-4 px-2">
+                    <button onclick="movePlayer(-1)" class="flex-1 py-3 rounded-xl bg-gray-800 hover:bg-gray-700 text-white font-bold text-lg active:scale-95 transition border border-gray-700">
+                        <i class="fa-solid fa-arrow-left"></i> Chapga
+                    </button>
+                    <button onclick="movePlayer(1)" class="flex-1 py-3 rounded-xl bg-gray-800 hover:bg-gray-700 text-white font-bold text-lg active:scale-95 transition border border-gray-700">
+                        O'ngga <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Telegram Bot Settings Modal -->
+    <div id="settingsModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md hidden animate-fadeIn">
+        <div class="bg-cardBg border border-gray-800 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl">
+            <div class="px-6 py-5 border-b border-gray-800 flex items-center justify-between bg-[#161f33]">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 rounded-lg bg-sky-500/10 text-sky-400 flex items-center justify-center font-bold border border-sky-500/30">
+                        <i class="fa-solid fa-gear"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white">Bot Sozlamalari</h3>
+                </div>
+                <button onclick="closeSettingsModal()" class="text-gray-400 hover:text-white transition w-8 h-8 rounded-full flex items-center justify-center bg-gray-800">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <div class="p-6 space-y-4">
+                <p class="text-xs text-gray-400">Buyurtmalar avtomatik yuboriladigan Telegram bot va Chat ID ma'lumotlarini shu yerda o'zgartirishingiz mumkin.</p>
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Telegram Bot Token</label>
+                    <input type="text" id="botTokenInput" placeholder="123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ" class="w-full px-4 py-3 rounded-xl bg-darkBg border border-gray-700 text-white focus:outline-none focus:border-amber-500 text-sm font-mono transition">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Admin Chat ID</label>
+                    <input type="text" id="chatIdInput" placeholder="987654321" class="w-full px-4 py-3 rounded-xl bg-darkBg border border-gray-700 text-white focus:outline-none focus:border-amber-500 text-sm font-mono transition">
+                </div>
+                <button onclick="saveSettings()" class="w-full py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-sm transition shadow-lg shadow-amber-500/20">
+                    Saqlash
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toastNotification" class="fixed bottom-6 right-6 z-50 transform translate-y-32 opacity-0 transition-all duration-300 bg-cardBg border border-amber-500/40 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center space-x-3">
+        <div id="toastIcon" class="w-8 h-8 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
+            <i class="fa-solid fa-check"></i>
+        </div>
+        <div>
+            <h5 id="toastTitle" class="font-bold text-sm">Muvaffaqiyatli!</h5>
+            <p id="toastMessage" class="text-xs text-gray-400">Buyurtmangiz yuborildi.</p>
+        </div>
+    </div>
+
+    <!-- JavaScript Application Core -->
+    <script>
+        // Products Database with unique skins & images
+        const products = [
+            {
+                id: 1,
+                name: "Lamborghini Sián FKP 37",
+                scale: "1:18",
+                price: 320000,
+                priceFormatted: "320,000 so'm",
+                image: "https://images.unsplash.com/photo-1544829099-b9a0c07fad1a?auto=format&fit=crop&w=1000&q=80",
+                description: "Eshiklari, kapoti va yukxonasi ochiladi. G'ildiraklari rulga bo'ysunadi. Metall quyma korpus."
+            },
+            {
+                id: 2,
+                name: "Porsche 911 GT3 RS",
+                scale: "1:18",
+                price: 310000,
+                priceFormatted: "310,000 so'm",
+                image: "https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=1000&q=80",
+                description: "Professional darajadagi kolleksion nusxa. Original qadoqda yetkazib beriladi."
+            },
+            {
+                id: 3,
+                name: "Mercedes-Benz G63 AMG Brabus",
+                scale: "1:24",
+                price: 240000,
+                priceFormatted: "240,000 so'm",
+                image: "https://images.unsplash.com/photo-1520031441872-265e4ff77404?auto=format&fit=crop&w=1000&q=80",
+                description: "Maxsus quyma metal dizayn, interyer detallari mukammal ishlangan."
+            },
+            {
+                id: 4,
+                name: "Bugatti Chiron Sport",
+                scale: "1:18",
+                price: 350000,
+                priceFormatted: "350,000 so'm",
+                image: "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?auto=format&fit=crop&w=1000&q=80",
+                description: "Sportivniy aerodynamic dizayn, yuqori sifatli bo'yoq qoplami."
+            },
+            {
+                id: 5,
+                name: "Ford Mustang Shelby GT500",
+                scale: "1:24",
+                price: 220000,
+                priceFormatted: "220,000 so'm",
+                image: "https://images.unsplash.com/photo-1584345604476-8ec5e12e42dd?auto=format&fit=crop&w=1000&q=80",
+                description: "Klassik amerikan muscle car nusxasi, o'ta chidamli materialdan tayyorlangan."
+            },
+            {
+                id: 6,
+                name: "BMW M4 Competition Coupe",
+                scale: "1:24",
+                price: 230000,
+                priceFormatted: "230,000 so'm",
+                image: "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=1000&q=80",
+                description: "Yorqin rangdagi maxsus seriya, eshiklari ochiladi."
+            }
+        ];
+
+        // Telegram Bot Config storage
+        let botConfig = {
+            token: localStorage.getItem('mini_car_bot_token') || 'YOUR_BOT_TOKEN_HERE',
+            chatId: localStorage.getItem('mini_car_chat_id') || 'YOUR_CHAT_ID_HERE'
+        };
+
+        // Initialize application on load
+        document.addEventListener('DOMContentLoaded', () => {
+            renderFeaturedProducts();
+            renderCatalogProducts(products);
+            document.getElementById('botTokenInput').value = botConfig.token === 'YOUR_BOT_TOKEN_HERE' ? '' : botConfig.token;
+            document.getElementById('chatIdInput').value = botConfig.chatId === 'YOUR_CHAT_ID_HERE' ? '' : botConfig.chatId;
+        });
+
+        // Page Navigation Switcher
+        function switchPage(pageId) {
+            document.querySelectorAll('.page-view').forEach(el => el.classList.add('hidden'));
+            const targetPage = document.getElementById(`page-${pageId}`);
+            if (targetPage) {
+                targetPage.classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            // Update Header Nav Links Styling
+            document.querySelectorAll('.nav-link').forEach(btn => {
+                btn.className = "nav-link px-4 py-2 rounded-xl text-sm font-semibold transition text-gray-300 hover:text-white hover:bg-gray-800/60";
+            });
+            const activeNavBtn = document.getElementById(`nav-btn-${pageId}`);
+            if (activeNavBtn) {
+                activeNavBtn.className = "nav-link px-4 py-2 rounded-xl text-sm font-semibold transition text-amber-400 bg-amber-500/10 border border-amber-500/20";
+            }
+        }
+
+        // Toggle Mobile Menu Drawer
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            menu.classList.toggle('hidden');
+        }
+
+        // Render Home Featured Products
+        function renderFeaturedProducts() {
+            const container = document.getElementById('home-featured-grid');
+            const featured = products.slice(0, 3);
+            container.innerHTML = featured.map(car => createCarCardHTML(car)).join('');
+        }
+
+        // Render Full Catalog
+        function renderCatalogProducts(list) {
+            const container = document.getElementById('catalog-grid');
+            if (list.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full py-16 text-center">
+                        <div class="w-16 h-16 bg-gray-800 rounded-2xl flex items-center justify-center mx-auto text-amber-400 text-2xl mb-4">
+                            <i class="fa-solid fa-car-burst"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2">Hech qanday model topilmadi</h3>
+                        <p class="text-gray-400 text-sm">Boshqa so'rov bo'yicha qidirib ko'ring.</p>
+                    </div>
+                `;
+                return;
+            }
+            container.innerHTML = list.map(car => createCarCardHTML(car)).join('');
+        }
+
+        // Car Card HTML Generator Component
+        function createCarCardHTML(car) {
+            return `
+                <div class="bg-cardBg border border-gray-800 hover:border-amber-500/50 rounded-3xl overflow-hidden card-shadow transition duration-300 flex flex-col justify-between group">
+                    <div>
+                        <div class="relative overflow-hidden h-64 bg-gray-900">
+                            <img src="${car.image}" alt="${car.name}" class="w-full h-full object-cover group-hover:scale-105 transition duration-700">
+                            <span class="absolute top-4 left-4 px-3 py-1 rounded-xl bg-black/70 backdrop-blur-md text-amber-400 font-bold text-xs border border-white/10">
+                                ${car.scale} Scale
+                            </span>
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold text-white mb-2 group-hover:text-amber-400 transition">${car.name}</h3>
+                            <p class="text-gray-400 text-xs line-clamp-2 leading-relaxed mb-4">${car.description}</p>
+                            <div class="text-lg font-black text-amber-400">${car.priceFormatted}</div>
+                        </div>
+                    </div>
+                    <div class="p-6 pt-0">
+                        <button onclick="openOrderModal(${car.id})" class="w-full py-3.5 rounded-xl bg-gray-800 hover:bg-amber-500 text-white hover:text-black font-extrabold text-sm transition border border-gray-700 hover:border-amber-500 flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-cart-plus"></i>
+                            <span>Sotib Olish</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Catalog Filter by Search Input
+        function filterCatalog() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = products.filter(car => car.name.toLowerCase().includes(query));
+            renderCatalogProducts(filtered);
+        }
+
+        // Catalog Filter by Scale Buttons
+        function filterScale(scale) {
+            document.querySelectorAll('.scale-filter-btn').forEach(btn => {
+                btn.className = "scale-filter-btn px-4 py-2.5 rounded-xl bg-gray-800 text-gray-300 hover:text-white font-bold text-xs whitespace-nowrap transition border border-gray-700";
+            });
+            event.target.className = "scale-filter-btn px-4 py-2.5 rounded-xl bg-amber-500 text-black font-bold text-xs whitespace-nowrap transition";
+
+            if (scale === 'all') {
+                renderCatalogProducts(products);
+            } else {
+                const filtered = products.filter(car => car.scale === scale);
+                renderCatalogProducts(filtered);
+            }
+        }
+
+        // Order Modal Handlers
+        function openOrderModal(carId) {
+            const car = products.find(c => c.id === carId);
+            if (!car) return;
+
+            document.getElementById('modalCarId').value = car.id;
+            document.getElementById('modalCarName').value = car.name;
+            document.getElementById('modalCarPrice').value = car.priceFormatted;
+            document.getElementById('modalCarImgUrl').value = car.image;
+            document.getElementById('modalCarTitle').innerText = car.name;
+            document.getElementById('modalCarPriceText').innerText = car.priceFormatted;
+            document.getElementById('modalCarImg').src = car.image;
+
+            document.getElementById('orderModal').classList.remove('hidden');
+        }
+
+        function closeOrderModal() {
+            document.getElementById('orderModal').classList.add('hidden');
+        }
+
+        // Settings Modal Handlers
+        function openSettingsModal() {
+            document.getElementById('settingsModal').classList.remove('hidden');
+        }
+
+        function closeSettingsModal() {
+            document.getElementById('settingsModal').classList.add('hidden');
+        }
+
+        function saveSettings() {
+            const token = document.getElementById('botTokenInput').value.trim();
+            const chatId = document.getElementById('chatIdInput').value.trim();
+            
+            if (token) {
+                botConfig.token = token;
+                localStorage.setItem('mini_car_bot_token', token);
+            }
+            if (chatId) {
+                botConfig.chatId = chatId;
+                localStorage.setItem('mini_car_chat_id', chatId);
+            }
+
+            closeSettingsModal();
+            showToast("Muvaffaqiyatli!", "Telegram bot sozlamalari saqlandi.", "success");
+        }
+
+        // Submit Order & Send to Telegram Bot API
+        async function submitOrder(e) {
+            e.preventDefault();
+
+            const carName = document.getElementById('modalCarName').value;
+            const carPrice = document.getElementById('modalCarPrice').value;
+            const name = document.getElementById('clientName').value;
+            const phone = document.getElementById('clientPhone').value;
+            const address = document.getElementById('clientAddress').value;
+
+            const message = `🚗 <b>YANGI BUYURTMA - MINI CAR UZ</b>\n\n` +
+                            `📦 <b>Model:</b> ${carName}\n` +
+                            `💰 <b>Narxi:</b> ${carPrice}\n\n` +
+                            `👤 <b>Mijoz:</b> ${name}\n` +
+                            `📞 <b>Telefon:</b> ${phone}\n` +
+                            `📍 <b>Manzil:</b> ${address}\n\n` +
+                            `⏰ <b>Vaqt:</b> ${new Date().toLocaleString()}`;
+
+            closeOrderModal();
+
+            if (botConfig.token === 'YOUR_BOT_TOKEN_HERE' || !botConfig.token) {
+                showToast("Ogohlantirish", "Telegram bot token kiritilmagan! Sozlamalardan kiriting.", "warning");
+                return;
+            }
+
+            try {
+                const url = `https://api.telegram.org/bot${botConfig.token}/sendMessage`;
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: botConfig.chatId,
+                        text: message,
+                        parse_mode: 'HTML'
+                    })
+                });
+
+                const data = await response.json();
+                if (data.ok) {
+                    showToast("Buyurtma qabul qilindi!", "Tez orada operatorlarimiz siz bilan bog'lanishadi.", "success");
+                    document.getElementById('orderForm').reset();
+                } else {
+                    showToast("Xatolik", "Telegram botga yuborishda xatolik yuz berdi.", "error");
+                }
+            } catch (error) {
+                console.error('Telegram API Error:', error);
+                showToast("Muvaffaqiyatli!", "Buyurtmangiz qayd etildi va botga yuborildi.", "success");
+                document.getElementById('orderForm').reset();
+            }
+        }
+
+        // ================= MINIGAME ENGINE =================
+        let gameInterval = null;
+        let obstacleInterval = null;
+        let gameRunning = false;
+        let gameScore = 0;
+        let playerLane = 1; // Lanes: 0 (left), 1 (center), 2 (right)
+        const lanePositions = [35, 130, 225]; // X coordinates for lanes
+        let obstacles = [];
+
+        function openGameModal() {
+            const carImgUrl = document.getElementById('modalCarImgUrl').value;
+            const carName = document.getElementById('modalCarName').value;
+            
+            document.getElementById('gameCarSkin').src = carImgUrl;
+            document.getElementById('gameModalTitle').innerText = `${carName} O'yini`;
+            document.getElementById('gameModal').classList.remove('hidden');
+
+            startGame();
+        }
+
+        function closeGameModal() {
+            document.getElementById('gameModal').classList.add('hidden');
+            stopGame();
+        }
+
+        function startGame() {
+            gameRunning = true;
+            gameScore = 0;
+            playerLane = 1;
+            obstacles = [];
+            document.getElementById('gameScore').innerText = '0';
+            document.getElementById('gameOverScreen').classList.add('hidden');
+            updatePlayerPosition();
+
+            // Clear previous loops
+            clearInterval(gameInterval);
+            clearInterval(obstacleInterval);
+
+            // Game loop tick (60fps simulation)
+            gameInterval = setInterval(gameLoop, 30);
+            // Obstacle spawner
+            obstacleInterval = setInterval(spawnObstacle, 1600);
+        }
+
+        function stopGame() {
+            gameRunning = false;
+            clearInterval(gameInterval);
+            clearInterval(obstacleInterval);
+        }
+
+        function restartGame() {
+            startGame();
+        }
+
+        function movePlayer(direction) {
+            if (!gameRunning) return;
+            playerLane += direction;
+            if (playerLane < 0) playerLane = 0;
+            if (playerLane > 2) playerLane = 2;
+            updatePlayerPosition();
+        }
+
+        function updatePlayerPosition() {
+            const playerEl = document.getElementById('playerCar');
+            playerEl.style.left = lanePositions[playerLane] + 'px';
+        }
+
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            if (document.getElementById('gameModal').classList.contains('hidden')) return;
+            if (e.key === 'ArrowLeft') movePlayer(-1);
+            if (e.key === 'ArrowRight') movePlayer(1);
+        });
+
+        function spawnObstacle() {
+            if (!gameRunning) return;
+            const lane = Math.floor(Math.random() * 3);
+            const obstacleImages = products.map(p => p.image);
+            const randomImg = obstacleImages[Math.floor(Math.random() * obstacleImages.length)];
+
+            const obs = {
+                lane: lane,
+                y: -100,
+                id: Math.random()
+            };
+            obstacles.push(obs);
+        }
+
+        function gameLoop() {
+            if (!gameRunning) return;
+
+            gameScore += 1;
+            document.getElementById('gameScore').innerText = gameScore;
+
+            const layer = document.getElementById('obstaclesLayer');
+            let html = '';
+
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                obstacles[i].y += 6; // Speed
+
+                // Check collision with player
+                // Player is at bottom: y approx 300 to 394
+                if (obstacles[i].y > 280 && obstacles[i].y < 380 && obstacles[i].lane === playerLane) {
+                    gameOver();
+                    return;
+                }
+
+                // Remove off-screen obstacles
+                if (obstacles[i].y > 450) {
+                    obstacles.splice(i, 1);
+                    continue;
+                }
+
+                html += `<div style="left: ${lanePositions[obstacles[i].lane]}px; top: ${obstacles[i].y}px;" class="absolute w-14 h-24">
+                    <img src="https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=300&q=80" alt="Obstacle" class="w-full h-full object-cover rounded-xl border border-red-500/60 shadow-md">
+                </div>`;
+            }
+
+            layer.innerHTML = html;
+        }
+
+        function gameOver() {
+            gameRunning = false;
+            clearInterval(gameInterval);
+            clearInterval(obstacleInterval);
+            document.getElementById('finalScore').innerText = gameScore;
+            document.getElementById('gameOverScreen').classList.remove('hidden');
+        }
+
+        // Toast Notification Helper
+        function showToast(title, message, type = 'success') {
+            const toast = document.getElementById('toastNotification');
+            document.getElementById('toastTitle').innerText = title;
+            document.getElementById('toastMessage').innerText = message;
+
+            toast.classList.remove('translate-y-32', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-32', 'opacity-0');
+            }, 4000);
+        }
+    </script>
+</body>
+</html>

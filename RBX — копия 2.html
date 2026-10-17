@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Roblox 3D Web Studio Pro</title>
+  <!-- Three.js Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <style>
+    /* CSS Reset & Global Styling */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background: #0f172a;
+      color: #f8fafc;
+      overflow-x: hidden;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    .screen {
+      display: none;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    /* Modern Buttons */
+    .btn {
+      padding: 0.65rem 1.2rem;
+      border: 0;
+      border-radius: 8px;
+      background: #2563eb;
+      color: #ffffff;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .btn:hover {
+      background: #1d4ed8;
+      transform: translateY(-1px);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn-red { background: #ef4444; color: #fff; }
+    .btn-red:hover { background: #dc2626; }
+
+    .btn-green { background: #10b981; color: #fff; }
+    .btn-green:hover { background: #059669; }
+
+    .btn-sub { background: #334155; color: #cbd5e1; }
+    .btn-sub:hover { background: #475569; color: #fff; }
+
+    /* 1. Auth Screen */
+    #auth {
+      justify-content: center;
+      align-items: center;
+      background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+    }
+
+    .card {
+      background: #1e293b;
+      padding: 2.5rem;
+      border-radius: 16px;
+      width: 380px;
+      border: 1px solid #334155;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    .card h2 {
+      color: #38bdf8;
+      text-align: center;
+      margin-bottom: 0.4rem;
+      font-size: 1.6rem;
+    }
+
+    .card p {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      text-align: center;
+      margin-bottom: 1.8rem;
+    }
+
+    .card label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #cbd5e1;
+      display: block;
+      margin-bottom: 0.4rem;
+    }
+
+    .card input {
+      width: 100%;
+      padding: 0.75rem 0.9rem;
+      margin-bottom: 1.2rem;
+      background: #0f172a;
+      border: 1px solid #334155;
+      color: #f8fafc;
+      border-radius: 8px;
+      outline: none;
+      font-size: 0.9rem;
+    }
+
+    .card input:focus {
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+    }
+
+    /* 2. Dashboard Screen */
+    #dash {
+      flex-direction: column;
+      padding: 1.5rem 2rem;
+      overflow-y: auto;
+      background: #0f172a;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #1e293b;
+      padding: 1.2rem 1.8rem;
+      border-radius: 14px;
+      border: 1px solid #334155;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 1rem;
+      margin: 1.8rem 0 1.2rem;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 0.5rem;
+    }
+
+    .tab {
+      background: none;
+      border: 0;
+      color: #94a3b8;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 0.5rem 1rem;
+      font-size: 0.95rem;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+
+    .tab:hover { color: #f8fafc; }
+
+    .tab.active-tab {
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.1);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .g-card {
+      background: #1e293b;
+      padding: 1.4rem;
+      border-radius: 14px;
+      border: 1px solid #334155;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 170px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .g-card:hover {
+      transform: translateY(-4px);
+      border-color: #38bdf8;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+    }
+
+    /* 3. Studio Screen Layout */
+    #studio {
+      display: flex;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    #editor-view {
+      flex: 1;
+      height: 100%;
+      background: #020617;
+      position: relative;
+    }
+
+    .sidebar {
+      width: 380px;
+      background: #1e293b;
+      padding: 1.4rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      border-left: 1px solid #334155;
+      overflow-y: auto;
+    }
+
+    .sidebar h3 {
+      color: #38bdf8;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .input-field {
+      width: 100%;
+      padding: 0.65rem 0.8rem;
+      background: #0f172a;
+      color: #f8fafc;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      outline: none;
+      font-size: 0.88rem;
+    }
+
+    .input-field:focus {
+      border-color: #38bdf8;
+    }
+
+    textarea {
+      width: 100%;
+      height: 220px;
+      background: #090d16;
+      color: #38bdf8;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 0.8rem;
+      font-family: 'Consolas', 'Fira Code', monospace;
+      font-size: 0.83rem;
+      resize: vertical;
+      line-height: 1.4;
+      outline: none;
+    }
+
+    textarea:focus {
+      border-color: #38bdf8;
+    }
+
+    .console {
+      background: #090d16;
+      color: #4ade80;
+      padding: 0.75rem;
+      min-height: 80px;
+      max-height: 120px;
+      font-family: monospace;
+      font-size: 0.8rem;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    /* 4. Play Screen Layout */
+    #play {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    #play-view {
+      width: 100%;
+      height: 100%;
+      background: #000;
+    }
+
+    .play-ui {
+      position: absolute;
+      top: 1.2rem;
+      left: 1.2rem;
+      background: rgba(30, 41, 59, 0.85);
+      backdrop-filter: blur(8px);
+      padding: 0.8rem 1.4rem;
+      border-radius: 12px;
+      display: flex;
+      gap: 1.2rem;
+      align-items: center;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1. Auth Screen -->
+  <div id="auth" class="screen active">
+    <div class="card">
+      <h2>Roblox 3D Studio</h2>
+      <p>O'z o'yiningizni yarating va ulashing</p>
+      <label>Nikneym:</label>
+      <input type="text" id="username" placeholder="Masalan: DeveloperX">
+      <label>Tug'ilgan Yil:</label>
+      <input type="number" id="birthyear" placeholder="Masalan: 2012">
+      <button class="btn" style="width:100%;" onclick="login()">Kirish / Saqlash</button>
+    </div>
+  </div>
+
+  <!-- 2. Dashboard Screen -->
+  <div id="dash" class="screen">
+    <header>
+      <h2 style="color: #38bdf8;">Roblox Studio Web</h2>
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <span id="user-info" style="color:#cbd5e1; font-weight:600;"></span>
+        <button class="btn btn-green" onclick="openStudio()">+ Yangi O'yin</button>
+        <button class="btn btn-red" onclick="logout()">Chiqish</button>
+      </div>
+    </header>
+
+    <div class="tabs">
+      <button class="tab active-tab" onclick="switchTab('all', this)">🌐 Onlayn Katalog</button>
+      <button class="tab" onclick="switchTab('mine', this)">📁 Mening O'yinlarim</button>
+    </div>
+
+    <div id="games-list" class="grid"></div>
+  </div>
+
+  <!-- 3. Studio Screen -->
+  <div id="studio" class="screen">
+    <div id="editor-view"></div>
+    
+    <div class="sidebar">
+      <h3>🛠️ 3D Studio Editor</h3>
+      
+      <label style="font-size:0.85rem; color:#cbd5e1;">O'yin Nomi:</label>
+      <input type="text" id="g-title" value="Mening O'yinim" class="input-field">
+      
+      <div style="display:flex; gap:0.5rem;">
+        <button class="btn btn-sub" style="flex:1" onclick="addCube()">+ Kubik</button>
+        <button class="btn btn-sub" style="flex:1" onclick="changeColor()">Rang</button>
+        <button class="btn btn-sub" style="flex:1" onclick="clearCustomObjects()">Tozalash</button>
+      </div>
+
+      <label style="font-size:0.85rem; color:#cbd5e1;">Tayyor Skript Shablonlari:</label>
+      <select class="input-field" onchange="loadPresetScript(this.value)">
+        <option value="move">🎮 WASD Boshqaruvi va O'yinchi</option>
+        <option value="rotate">🔄 O'z Avariyaviy Aylanish</option>
+        <option value="jump">🚀 Sakrash va Sakrash Platformasi</option>
+      </select>
+
+      <label style="font-size:0.85rem; color:#cbd5e1;">JavaScript (Three.js) kodi:</label>
+      <textarea id="code-editor" spellcheck="false"></textarea>
+      
+      <button class="btn" onclick="testCode()">▶ Kodni Ishga Tushirish</button>
+      <div id="console" class="console">Tayyor. Kodni kiriting va ishga tushiring...</div>
+      
+      <button class="btn btn-green" onclick="publish()">Katalogga Joylash</button>
+      <button class="btn btn-sub" onclick="exitStudio()">Dashboard'ga Qaytish</button>
+    </div>
+  </div>
+
+  <!-- 4. Play Screen -->
+  <div id="play" class="screen">
+    <div class="play-ui">
+      <b id="p-title" style="color:#f8fafc; font-size:1.1rem;">O'yin</b>
+      <span id="p-author" style="color:#38bdf8; font-weight:600;"></span>
+      <button class="btn btn-sub" onclick="stopPlay()">Chiqish</button>
+    </div>
+    <div id="play-view"></div>
+  </div>
+
+  <script>
+    // Tayyor Kod Namunalari (Endi THREE kutubxonasi to'liq qo'llab-quvvatlanadi!)
+    const PRESETS = {
+      move: `// WASD orqali ob'yektni harakatlantirish
+if (keys['KeyW'] || keys['ArrowUp']) mesh.position.z -= 0.15;
+if (keys['KeyS'] || keys['ArrowDown']) mesh.position.z += 0.15;
+if (keys['KeyA'] || keys['ArrowLeft']) mesh.position.x -= 0.15;
+if (keys['KeyD'] || keys['ArrowRight']) mesh.position.x += 0.15;
+
+mesh.rotation.y += 0.01;`,
+
+      rotate: `// Ob'yektni doimiy aylantirish
+mesh.rotation.x += 0.02;
+mesh.rotation.y += 0.02;`,
+
+      jump: `// Harakatli sakrash va dinamik yorug'lik
+mesh.position.y = 1 + Math.abs(Math.sin(Date.now() * 0.005)) * 2.5;
+mesh.rotation.y += 0.03;`
+    };
+
+    // Klaviatura tugmalarini kuzatish
+    const keys = {};
+    window.addEventListener('keydown', e => keys[e.code] = true);
+    window.addEventListener('keyup', e => keys[e.code] = false);
+
+    // Tizim xotirasi (LocalStorage)
+    let users = JSON.parse(localStorage.getItem('r_users')) || [];
+    let games = JSON.parse(localStorage.getItem('r_games')) || [
+      { id: 1, title: "3D Runner Arena", author: "Admin", code: PRESETS.move, color: 0x2563eb }
+    ];
+    let user = JSON.parse(localStorage.getItem('r_session')) || null;
+    let currentFilter = 'all';
+
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      const activeScreen = document.getElementById(id);
+      activeScreen.classList.add('active');
+    }
+
+    window.onload = () => {
+      document.getElementById('code-editor').value = PRESETS.move;
+      if(user) setSession();
+    };
+
+    function login() {
+      const u = document.getElementById('username').value.trim();
+      const yStr = document.getElementById('birthyear').value.trim();
+      const y = parseInt(yStr, 10);
+      const currentYear = 2026;
+
+      if(!u || !yStr || isNaN(y)) {
+        return alert("Iltimos, nikneym va tug'ilgan yilingizni to'g'ri kiriting!");
+      }
+
+      if(y > currentYear) {
+        return alert("❌ Xatolik: Tug'ilgan yil 2026-yildan oshishi mumkin emas!");
+      }
+
+      let found = users.find(x => x.name.toLowerCase() === u.toLowerCase());
+      if(found) {
+        user = found;
+      } else {
+        user = { id: Date.now(), name: u, year: yStr };
+        users.push(user);
+        localStorage.setItem('r_users', JSON.stringify(users));
+      }
+      setSession();
+    }
+
+    function setSession() {
+      localStorage.setItem('r_session', JSON.stringify(user));
+      document.getElementById('user-info').innerText = "O'yinchi: " + user.name;
+      showScreen('dash');
+      renderGames('all');
+    }
+
+    function logout() {
+      localStorage.removeItem('r_session');
+      user = null;
+      document.getElementById('username').value = '';
+      document.getElementById('birthyear').value = '';
+      showScreen('auth');
+    }
+
+    function switchTab(type, btn) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active-tab'));
+      btn.classList.add('active-tab');
+      currentFilter = type;
+      renderGames(type);
+    }
+
+    function renderGames(filter) {
+      currentFilter = filter;
+      const list = document.getElementById('games-list');
+      list.innerHTML = '';
+      const items = filter === 'mine' ? games.filter(g => g.author === user.name) : games;
+      
+      if(items.length === 0) {
+        list.innerHTML = `<p style="color:#94a3b8; grid-column: 1/-1; text-align:center; padding: 2rem;">Hozircha o'yinlar mavjud emas.</p>`;
+        return;
+      }
+
+      items.forEach(g => {
+        list.innerHTML += `
+          <div class="g-card">
+            <div>
+              <h3 style="color:#f8fafc; margin-bottom:0.4rem;">${g.title}</h3>
+              <p style="font-size:0.85rem; color:#94a3b8;">Muallif: <b style="color:#38bdf8;">${g.author}</b></p>
+            </div>
+            <div style="display:flex; gap:0.5rem; margin-top:1.2rem;">
+              <button class="btn btn-green" style="flex:1" onclick="playGame(${g.id})">▶ O'ynash</button>
+              <button class="btn btn-red" style="padding: 0.6rem 0.8rem;" title="O'chirish" onclick="deleteGame(${g.id})">🗑</button>
+            </div>
+          </div>`;
+      });
+    }
+
+    function deleteGame(id) {
+      const g = games.find(x => x.id === id);
+      if(!g) return;
+
+      if(g.author !== user.name && user.name !== "Admin") {
+        return alert("❌ Xatolik: Siz faqat o'zingiz yaratgan o'yinlarni o'chira olasiz!");
+      }
+
+      if(confirm(`"${g.title}" o'yinini o'chirishni tasdiqlaysizmi?`)) {
+        games = games.filter(x => x.id !== id);
+        localStorage.setItem('r_games', JSON.stringify(games));
+        renderGames(currentFilter);
+      }
+    }
+
+    /* --- Three.js 3D Engine & Execution Logic --- */
+    let editorScene, editorCamera, editorRenderer, mainMesh, editorAnimId = null;
+    let customObjectsGroup = null;
+    const clock = new THREE.Clock();
+
+    function openStudio() {
+      showScreen('studio');
+      setTimeout(() => {
+        if(!editorRenderer) {
+          initStudioEngine();
+        } else {
+          onWindowResize();
+        }
+      }, 50);
+    }
+
+    function initStudioEngine() {
+      const container = document.getElementById('editor-view');
+      container.innerHTML = '';
+
+      editorScene = new THREE.Scene();
+      editorScene.background = new THREE.Color(0x020617);
+
+      editorCamera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+      editorCamera.position.set(0, 5, 8); 
+      editorCamera.lookAt(0, 0, 0);
+
+      editorRenderer = new THREE.WebGLRenderer({ antialias: true });
+      editorRenderer.setSize(container.clientWidth, container.clientHeight);
+      container.appendChild(editorRenderer.domElement);
+
+      // Yoritish va Yer tekisligi
+      const light = new THREE.DirectionalLight(0xffffff, 1.2);
+      light.position.set(5, 10, 7);
+      const grid = new THREE.GridHelper(20, 20, 0x38bdf8, 0x1e293b);
+      editorScene.add(light, new THREE.AmbientLight(0xffffff, 0.4), grid);
+
+      // Asosiy Ob'yekt
+      mainMesh = new THREE.Mesh(
+        new THREE.BoxGeometry(1.2, 1.2, 1.2), 
+        new THREE.MeshStandardMaterial({ color: 0x2563eb, roughness: 0.3 })
+      );
+      mainMesh.position.y = 0.6;
+      editorScene.add(mainMesh);
+
+      // Qo'shimcha AI ob'yektlari uchun guruh
+      customObjectsGroup = new THREE.Group();
+      editorScene.add(customObjectsGroup);
+
+      window.addEventListener('resize', onWindowResize);
+      testCode();
+    }
+
+    function onWindowResize() {
+      if(!editorRenderer || !editorCamera) return;
+      const container = document.getElementById('editor-view');
+      if(container.clientWidth === 0) return;
+      editorCamera.aspect = container.clientWidth / container.clientHeight;
+      editorCamera.updateProjectionMatrix();
+      editorRenderer.setSize(container.clientWidth, container.clientHeight);
+    }
+
+    function addCube() {
+      if(mainMesh) editorScene.remove(mainMesh);
+      mainMesh = new THREE.Mesh(
+        new THREE.BoxGeometry(1.2, 1.2, 1.2), 
+        new THREE.MeshStandardMaterial({ color: 0x2563eb, roughness: 0.3 })
+      );
+      mainMesh.position.set(0, 0.6, 0);
+      editorScene.add(mainMesh);
+    }
+
+    function changeColor() {
+      if(mainMesh) mainMesh.material.color.setHex(Math.random() * 0xffffff);
+    }
+
+    function clearCustomObjects() {
+      if(customObjectsGroup) {
+        while(customObjectsGroup.children.length > 0){ 
+          customObjectsGroup.remove(customObjectsGroup.children[0]); 
+        }
+      }
+    }
+
+    function loadPresetScript(type) {
+      if(PRESETS[type]) {
+        document.getElementById('code-editor').value = PRESETS[type];
+        testCode();
+      }
+    }
+
+    function testCode() {
+      if(editorAnimId) cancelAnimationFrame(editorAnimId);
+      const code = document.getElementById('code-editor').value;
+      const con = document.getElementById('console');
+
+      function studioLoop() {
+        editorAnimId = requestAnimationFrame(studioLoop);
+        const delta = clock.getDelta();
+
+        try {
+          // AI kodlari to'g'ri ishlashi uchun THREE va delta argument sifatida berildi
+          const scriptFunc = new Function('mesh', 'scene', 'camera', 'keys', 'THREE', 'delta', 'customGroup', code);
+          scriptFunc(mainMesh, editorScene, editorCamera, keys, THREE, delta, customObjectsGroup);
+          
+          con.style.color = "#4ade80"; 
+          con.innerText = "✅ Kod muvaffaqiyatli ishlamoqda! Boshqarish uchun WASD va strelkalardan foydalaning.";
+        } catch(e) {
+          cancelAnimationFrame(editorAnimId);
+          con.style.color = "#f87171"; 
+          con.innerText = "❌ Skript Xatoligi: " + e.message;
+        }
+
+        editorRenderer.render(editorScene, editorCamera);
+      }
+
+      studioLoop();
+    }
+
+    function publish() {
+      const t = document.getElementById('g-title').value.trim();
+      if(!t) return alert("O'yinga nom bering!");
+      
+      games.push({ 
+        id: Date.now(), 
+        title: t, 
+        author: user.name, 
+        code: document.getElementById('code-editor').value, 
+        color: mainMesh ? mainMesh.material.color.getHex() : 0x2563eb 
+      });
+
+      localStorage.setItem('r_games', JSON.stringify(games));
+      alert("O'yin muvaffaqiyatli katalogga joylandi!");
+      exitStudio();
+    }
+
+    function exitStudio() {
+      if(editorAnimId) cancelAnimationFrame(editorAnimId);
+      showScreen('dash');
+      renderGames(currentFilter);
+    }
+
+    /* --- O'yinni O'ynash Rejimi --- */
+    let playAnimId = null;
+
+    function playGame(id) {
+      const g = games.find(x => x.id === id);
+      if(!g) return;
+
+      document.getElementById('p-title').innerText = g.title;
+      document.getElementById('p-author').innerText = "(" + g.author + ")";
+      showScreen('play');
+
+      const container = document.getElementById('play-view');
+      container.innerHTML = '';
+
+      const pScene = new THREE.Scene();
+      pScene.background = new THREE.Color(0x020617);
+
+      const pCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      pCamera.position.set(0, 5, 8);
+      pCamera.lookAt(0, 0, 0);
+
+      const pRenderer = new THREE.WebGLRenderer({ antialias: true });
+      pRenderer.setSize(window.innerWidth, window.innerHeight);
+      container.appendChild(pRenderer.domElement);
+
+      const light = new THREE.DirectionalLight(0xffffff, 1.2);
+      light.position.set(5, 10, 7);
+      pScene.add(light, new THREE.AmbientLight(0xffffff, 0.4), new THREE.GridHelper(20, 20, 0x38bdf8, 0x1e293b));
+
+      const pMesh = new THREE.Mesh(
+        new THREE.BoxGeometry(1.2, 1.2, 1.2), 
+        new THREE.MeshStandardMaterial({ color: g.color || 0x2563eb })
+      );
+      pMesh.position.y = 0.6;
+      pScene.add(pMesh);
+
+      const pClock = new THREE.Clock();
+
+      function playLoop() {
+        if(!document.getElementById('play').classList.contains('active')) return;
+        playAnimId = requestAnimationFrame(playLoop);
+        const delta = pClock.getDelta();
+
+        try { 
+          const playFunc = new Function('mesh', 'scene', 'camera', 'keys', 'THREE', 'delta', g.code);
+          playFunc(pMesh, pScene, pCamera, keys, THREE, delta);
+        } catch(e) {}
+
+        pRenderer.render(pScene, pCamera);
+      }
+
+      playLoop();
+    }
+
+    function stopPlay() {
+      if(playAnimId) cancelAnimationFrame(playAnimId);
+      showScreen('dash');
+    }
+  </script>
+</body>
+</html>
